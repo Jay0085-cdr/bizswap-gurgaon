@@ -21,3 +21,4 @@ The company brief asks for maximum use of AI coders. This file records what was 
 ## Runtime AI (inside the product)
 
 The app's work is done by LLM agents at runtime: intake, listing, valuation, matchmaker and watch. Every call is logged to the `agent_runs` table with input, output, model and latency, so the company can audit exactly what the AI did.
+| M2 Agents (code) | LLM adapter (Gemini Interactions API / Claude tool-use / Groq), zod-validated structured output with repair retry + provider fallback; intake, listing, valuation, matchmaker, watch agents; deterministic fallbacks; setup/deploy/smoke scripts | — | Agent probed the live Gemini API: `gemini-2.5-*` closed to new users, `gemini-3.8-flash` timed out on free tier → defaulted to `gemini-3.5-flash-lite` via the new Interactions API (~2 s/call). |
