@@ -17,8 +17,8 @@ The company brief asks for maximum use of AI coders. This file records what was 
 |---|---|---|---|
 | M0 Scaffold | `create-expo-app` run by the agent; all screens, theme, libs, `app.json`, `eas.json`, CLAUDE.md | none | The agent detected that Node 21 was too old for SDK 58 and installed Node 22 side by side. It read the MapLibre v11 type definitions instead of relying on memory, because the API changed in v11. |
 | M1 Data lake | Full schema (18 tables), RLS policies, views, RPCs, gazetteer of 46 Gurgaon localities, 25 fictional listings and 10 buyer requirements via `scripts/gen-seed.mts` | `supabase login` | |
+| M2 Agents (code) | LLM adapter (Gemini Interactions API / Claude tool-use / Groq), zod-validated structured output with repair retry + provider fallback; intake, listing, valuation, matchmaker, watch agents; deterministic fallbacks; setup/deploy/smoke scripts | — | Agent probed the live Gemini API: `gemini-2.5-*` closed to new users, `gemini-3.8-flash` timed out on free tier → defaulted to `gemini-3.5-flash-lite` via the new Interactions API (~2 s/call). |
 
 ## Runtime AI (inside the product)
 
 The app's work is done by LLM agents at runtime: intake, listing, valuation, matchmaker and watch. Every call is logged to the `agent_runs` table with input, output, model and latency, so the company can audit exactly what the AI did.
-| M2 Agents (code) | LLM adapter (Gemini Interactions API / Claude tool-use / Groq), zod-validated structured output with repair retry + provider fallback; intake, listing, valuation, matchmaker, watch agents; deterministic fallbacks; setup/deploy/smoke scripts | — | Agent probed the live Gemini API: `gemini-2.5-*` closed to new users, `gemini-3.8-flash` timed out on free tier → defaulted to `gemini-3.5-flash-lite` via the new Interactions API (~2 s/call). |
