@@ -1,0 +1,132 @@
+{
+  "$comment": "Single source of truth for business types. Seeded into the business_types table; Edge Functions read the table, so a new type only needs a row (or an entry here + `npm run db:config`). Field types: inr (rupees, integer), number, text, locality (resolved against localities), boolean.",
+  "types": [
+    {
+      "key": "pub",
+      "label": "Pub / Bar",
+      "plural": "Pubs",
+      "icon": "beer",
+      "color": "#8B5CF6",
+      "aliases": ["pub", "bar", "lounge", "brewery", "microbrewery", "nightclub", "club"],
+      "fields": [
+        { "key": "location", "label": "Location", "type": "locality", "required": true, "ask": "Where exactly is the pub — which mall, market or sector in Gurgaon?" },
+        { "key": "daily_footfall", "label": "Daily footfall", "type": "number", "unit": "people/day", "required": true, "ask": "Roughly how many customers walk in on a typical day?" },
+        { "key": "daily_billing", "label": "Daily billing", "type": "inr", "unit": "per day", "required": true, "ask": "What is your average daily billing?" },
+        { "key": "lease_remaining_years", "label": "Lease remaining", "type": "number", "unit": "years", "required": true, "ask": "How many years are left on the lease?" },
+        { "key": "monthly_rent", "label": "Monthly rent", "type": "inr", "unit": "per month", "required": true, "ask": "What is the monthly rent?" },
+        { "key": "asking_price", "label": "Asking price", "type": "inr", "required": false, "ask": "Do you have an asking price in mind? (You can skip this — our valuation agent will suggest a range.)" },
+        { "key": "years_running", "label": "Years running", "type": "number", "unit": "years", "required": false },
+        { "key": "seating_capacity", "label": "Seating capacity", "type": "number", "unit": "covers", "required": false },
+        { "key": "liquor_license", "label": "Liquor licence", "type": "boolean", "required": false }
+      ],
+      "revenue": { "field": "daily_billing", "annual_factor": 365 },
+      "valuation": { "multiple_low": 0.6, "multiple_high": 1.2, "basis": "annual revenue", "notes": "F&B goodwill + fit-out; discounted 20% if lease < 2 years" },
+      "buyer_fields": [
+        { "key": "min_daily_billing", "label": "Min daily billing", "type": "inr", "required": false },
+        { "key": "min_daily_footfall", "label": "Min daily footfall", "type": "number", "required": false },
+        { "key": "min_lease_remaining_years", "label": "Min lease remaining", "type": "number", "unit": "years", "required": false }
+      ]
+    },
+    {
+      "key": "restaurant",
+      "label": "Restaurant / Café",
+      "plural": "Restaurants",
+      "icon": "restaurant",
+      "color": "#F97316",
+      "aliases": ["restaurant", "cafe", "café", "eatery", "dhaba", "bakery", "qsr", "cloud kitchen", "food court"],
+      "fields": [
+        { "key": "location", "label": "Location", "type": "locality", "required": true, "ask": "Where is the restaurant — which mall, market or sector in Gurgaon?" },
+        { "key": "daily_footfall", "label": "Daily footfall", "type": "number", "unit": "people/day", "required": true, "ask": "Roughly how many customers do you serve on a typical day?" },
+        { "key": "daily_billing", "label": "Daily billing", "type": "inr", "unit": "per day", "required": true, "ask": "What is your average daily billing?" },
+        { "key": "lease_remaining_years", "label": "Lease remaining", "type": "number", "unit": "years", "required": true, "ask": "How many years are left on the lease?" },
+        { "key": "monthly_rent", "label": "Monthly rent", "type": "inr", "unit": "per month", "required": true, "ask": "What is the monthly rent?" },
+        { "key": "asking_price", "label": "Asking price", "type": "inr", "required": false, "ask": "Do you have an asking price in mind? (You can skip this.)" },
+        { "key": "cuisine", "label": "Cuisine", "type": "text", "required": false },
+        { "key": "years_running", "label": "Years running", "type": "number", "unit": "years", "required": false },
+        { "key": "seating_capacity", "label": "Seating capacity", "type": "number", "unit": "covers", "required": false }
+      ],
+      "revenue": { "field": "daily_billing", "annual_factor": 365 },
+      "valuation": { "multiple_low": 0.5, "multiple_high": 1.0, "basis": "annual revenue", "notes": "F&B goodwill + fit-out; discounted 20% if lease < 2 years" },
+      "buyer_fields": [
+        { "key": "min_daily_billing", "label": "Min daily billing", "type": "inr", "required": false },
+        { "key": "min_daily_footfall", "label": "Min daily footfall", "type": "number", "required": false },
+        { "key": "cuisine", "label": "Cuisine", "type": "text", "required": false }
+      ]
+    },
+    {
+      "key": "doctor",
+      "label": "Doctor / Clinic",
+      "plural": "Clinics",
+      "icon": "medkit",
+      "color": "#0EA5E9",
+      "aliases": ["doctor", "clinic", "practice", "physician", "dental", "dentist", "pediatric", "polyclinic", "nursing home", "gp"],
+      "fields": [
+        { "key": "specialty", "label": "Specialty", "type": "text", "required": true, "ask": "What is the specialty of the practice (e.g. general physician, dental, paediatrics)?" },
+        { "key": "years_running", "label": "Years running", "type": "number", "unit": "years", "required": true, "ask": "How many years has the practice been running?" },
+        { "key": "patient_count", "label": "Patients", "type": "number", "unit": "patients", "required": true, "ask": "Roughly how many active patients do you have?" },
+        { "key": "monthly_billing", "label": "Monthly billing", "type": "inr", "unit": "per month", "required": true, "ask": "What is the average monthly billing?" },
+        { "key": "location", "label": "Location", "type": "locality", "required": true, "ask": "Where is the clinic located in Gurgaon (sector, market or road)?" },
+        { "key": "asking_price", "label": "Asking price", "type": "inr", "required": false, "ask": "Do you have an asking price in mind? (You can skip this.)" },
+        { "key": "premises", "label": "Premises", "type": "text", "required": false, "hint": "owned / rented" }
+      ],
+      "revenue": { "field": "monthly_billing", "annual_factor": 12 },
+      "valuation": { "multiple_low": 1.0, "multiple_high": 2.0, "basis": "annual billing", "notes": "Patient goodwill; higher for long-running practices" },
+      "buyer_fields": [
+        { "key": "specialty", "label": "Specialty", "type": "text", "required": false },
+        { "key": "min_patient_count", "label": "Min patients", "type": "number", "required": false },
+        { "key": "min_monthly_billing", "label": "Min monthly billing", "type": "inr", "required": false }
+      ]
+    },
+    {
+      "key": "ca",
+      "label": "CA Practice",
+      "plural": "CA practices",
+      "icon": "calculator",
+      "color": "#10B981",
+      "aliases": ["ca", "chartered accountant", "ca firm", "audit firm", "accounting practice", "tax practice"],
+      "fields": [
+        { "key": "client_count", "label": "Clients", "type": "number", "unit": "clients", "required": true, "ask": "How many active clients does the practice have?" },
+        { "key": "annual_billing", "label": "Annual billing", "type": "inr", "unit": "per year", "required": true, "ask": "What is the annual billing (fees)?" },
+        { "key": "years_running", "label": "Years running", "type": "number", "unit": "years", "required": true, "ask": "How many years has the practice been running?" },
+        { "key": "location", "label": "Location", "type": "locality", "required": true, "ask": "Where is the office in Gurgaon (sector, market or road)?" },
+        { "key": "asking_price", "label": "Asking price", "type": "inr", "required": false, "ask": "Do you have an asking price in mind? (You can skip this.)" },
+        { "key": "staff_count", "label": "Staff", "type": "number", "required": false },
+        { "key": "services", "label": "Services", "type": "text", "required": false, "hint": "audit, GST, ITR…" }
+      ],
+      "revenue": { "field": "annual_billing", "annual_factor": 1 },
+      "valuation": { "multiple_low": 1.0, "multiple_high": 1.8, "basis": "annual fees", "notes": "Recurring-client goodwill (typical 1–1.5x fees)" },
+      "buyer_fields": [
+        { "key": "min_client_count", "label": "Min clients", "type": "number", "required": false },
+        { "key": "min_annual_billing", "label": "Min annual billing", "type": "inr", "required": false }
+      ]
+    },
+    {
+      "key": "cs",
+      "label": "CS Practice",
+      "plural": "CS practices",
+      "icon": "briefcase",
+      "color": "#EAB308",
+      "aliases": ["cs", "company secretary", "cs firm", "secretarial practice", "compliance practice"],
+      "fields": [
+        { "key": "client_count", "label": "Clients", "type": "number", "unit": "clients", "required": true, "ask": "How many active clients does the practice have?" },
+        { "key": "annual_billing", "label": "Annual billing", "type": "inr", "unit": "per year", "required": true, "ask": "What is the annual billing (fees)?" },
+        { "key": "years_running", "label": "Years running", "type": "number", "unit": "years", "required": true, "ask": "How many years has the practice been running?" },
+        { "key": "location", "label": "Location", "type": "locality", "required": true, "ask": "Where is the office in Gurgaon (sector, market or road)?" },
+        { "key": "asking_price", "label": "Asking price", "type": "inr", "required": false, "ask": "Do you have an asking price in mind? (You can skip this.)" },
+        { "key": "staff_count", "label": "Staff", "type": "number", "required": false },
+        { "key": "services", "label": "Services", "type": "text", "required": false, "hint": "ROC filings, incorporation…" }
+      ],
+      "revenue": { "field": "annual_billing", "annual_factor": 1 },
+      "valuation": { "multiple_low": 0.8, "multiple_high": 1.5, "basis": "annual fees", "notes": "Retainer-client goodwill" },
+      "buyer_fields": [
+        { "key": "min_client_count", "label": "Min clients", "type": "number", "required": false },
+        { "key": "min_annual_billing", "label": "Min annual billing", "type": "inr", "required": false }
+      ]
+    }
+  ],
+  "buyer_common_fields": [
+    { "key": "areas", "label": "Preferred areas", "type": "locality_list", "required": true, "ask": "Any particular area in Gurgaon you prefer (e.g. Golf Course Road, Sohna Road, Cyber Hub), or anywhere in Gurgaon?" },
+    { "key": "budget_max", "label": "Budget", "type": "inr", "required": true, "ask": "What is your maximum budget for the acquisition?" },
+    { "key": "budget_min", "label": "Min budget", "type": "inr", "required": false }
+  ]
+}

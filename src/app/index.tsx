@@ -1,98 +1,102 @@
-import * as Device from 'expo-device';
-import { Platform, StyleSheet } from 'react-native';
+import { Redirect, router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import { Pressable, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { AnimatedIcon } from '@/components/animated-icon';
-import { HintRow } from '@/components/hint-row';
-import { ThemedText } from '@/components/themed-text';
-import { ThemedView } from '@/components/themed-view';
-import { WebBadge } from '@/components/web-badge';
-import { BottomTabInset, MaxContentWidth, Spacing } from '@/constants/theme';
+import { Icon, T, type IconName } from '@/components/ui';
+import { Radius, Spacing } from '@/constants/theme';
+import { useTheme } from '@/hooks/use-theme';
+import { getRolePref, setRolePref, type RolePref } from '@/lib/prefs';
+import { supabase } from '@/lib/supabase';
+import { track } from '@/lib/track';
 
-function getDevMenuHint() {
-  if (Platform.OS === 'web') {
-    return <ThemedText type="small">use browser devtools</ThemedText>;
-  }
-  if (Device.isDevice) {
-    return (
-      <ThemedText type="small">
-        shake device or press <ThemedText type="code">m</ThemedText> in terminal
-      </ThemedText>
-    );
-  }
-  const shortcut = Platform.OS === 'android' ? 'cmd+m (or ctrl+m)' : 'cmd+d';
+const OPTIONS: { role: RolePref; icon: IconName; title: string; body: string }[] = [
+  { role: 'seller', icon: 'storefront', title: 'Sell a Business', body: 'Just say what you’re selling — our AI fills in the rest.' },
+  { role: 'buyer', icon: 'search', title: 'Buy a Business', body: 'Describe what you want; we match you with listings.' },
+];
+
+export default function Welcome() {
+  const theme = useTheme();
+  const [checked, setChecked] = useState<RolePref | null | undefined>(undefined);
+
+  useEffect(() => {
+    getRolePref().then(setChecked);
+  }, []);
+
+  if (checked === undefined) return null;
+  if (checked) return <Redirect href="/explore" />;
+
+  const choose = async (role: RolePref) => {
+    await setRolePref(role);
+    track('role_selected', { role }, 'welcome');
+    void supabase.from('profiles').update({ role_pref: role }).then(() => {});
+    router.replace('/explore');
+    if (role !== 'browse') router.push({ pathname: '/chat/[role]', params: { role } });
+  };
+
   return (
-    <ThemedText type="small">
-      press <ThemedText type="code">{shortcut}</ThemedText>
-    </ThemedText>
-  );
-}
+    <SafeAreaView style={[styles.root, { backgroundColor: theme.background }]}>
+      <View style={styles.hero}>
+        <View style={[styles.logo, { backgroundColor: theme.primary }]}>
+          <Icon name="swap-horizontal" size={30} color={theme.primaryText} />
+        </View>
+        <T type="title">BizSwap Gurgaon</T>
+        <T type="default" color="textSecondary">
+          Buy or sell running businesses — pubs, restaurants, clinics, CA & CS practices — in Gurgaon.
+        </T>
+      </View>
 
-export default function HomeScreen() {
-  return (
-    <ThemedView style={styles.container}>
-      <SafeAreaView style={styles.safeArea}>
-        <ThemedView style={styles.heroSection}>
-          <AnimatedIcon />
-          <ThemedText type="title" style={styles.title}>
-            Welcome to&nbsp;Expo
-          </ThemedText>
-        </ThemedView>
+      <View style={styles.options}>
+        {OPTIONS.map((o) => (
+          <Pressable
+            key={o.role}
+            accessibilityRole="button"
+            onPress={() => choose(o.role)}
+            style={({ pressed }) => [
+              styles.option,
+              { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 },
+            ]}>
+            <View style={[styles.optionIcon, { backgroundColor: theme.primarySoft }]}>
+              <Icon name={o.icon} size={26} color={theme.primary} />
+            </View>
+            <View style={{ flex: 1, gap: 2 }}>
+              <T type="subtitle">{o.title}</T>
+              <T type="small" color="textSecondary">
+                {o.body}
+              </T>
+            </View>
+            <Icon name="chevron-forward" color={theme.textSecondary} />
+          </Pressable>
+        ))}
+        <Pressable accessibilityRole="button" onPress={() => choose('browse')} style={styles.browse}>
+          <T type="smallBold" color="primary">
+            Just browse the map →
+          </T>
+        </Pressable>
+      </View>
 
-        <ThemedText type="code" style={styles.code}>
-          get started
-        </ThemedText>
-
-        <ThemedView type="backgroundElement" style={styles.stepContainer}>
-          <HintRow
-            title="Try editing"
-            hint={<ThemedText type="code">src/app/index.tsx</ThemedText>}
-          />
-          <HintRow title="Dev tools" hint={getDevMenuHint()} />
-          <HintRow
-            title="Fresh start"
-            hint={<ThemedText type="code">npm run reset-project</ThemedText>}
-          />
-        </ThemedView>
-
-        {Platform.OS === 'web' && <WebBadge />}
-      </SafeAreaView>
-    </ThemedView>
+      <T type="small" color="textSecondary" style={styles.footer}>
+        No sign-up, no permissions needed.
+      </T>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
+  root: { flex: 1, padding: Spacing.four, justifyContent: 'space-between' },
+  hero: { marginTop: Spacing.six, gap: Spacing.three },
+  logo: { width: 60, height: 60, borderRadius: Radius.lg, alignItems: 'center', justifyContent: 'center' },
+  options: { gap: Spacing.three },
+  option: {
     flexDirection: 'row',
-  },
-  safeArea: {
-    flex: 1,
-    paddingHorizontal: Spacing.four,
     alignItems: 'center',
     gap: Spacing.three,
-    paddingBottom: BottomTabInset + Spacing.three,
-    maxWidth: MaxContentWidth,
+    padding: Spacing.three,
+    borderRadius: Radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    minHeight: 88,
   },
-  heroSection: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    flex: 1,
-    paddingHorizontal: Spacing.four,
-    gap: Spacing.four,
-  },
-  title: {
-    textAlign: 'center',
-  },
-  code: {
-    textTransform: 'uppercase',
-  },
-  stepContainer: {
-    gap: Spacing.three,
-    alignSelf: 'stretch',
-    paddingHorizontal: Spacing.three,
-    paddingVertical: Spacing.four,
-    borderRadius: Spacing.four,
-  },
+  optionIcon: { width: 52, height: 52, borderRadius: Radius.md, alignItems: 'center', justifyContent: 'center' },
+  browse: { alignSelf: 'center', padding: Spacing.three },
+  footer: { textAlign: 'center' },
 });

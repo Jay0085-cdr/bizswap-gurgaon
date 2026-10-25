@@ -1,26 +1,39 @@
 {
   "expo": {
-    "name": "bizswap",
-    "slug": "bizswap",
+    "name": "BizSwap Gurgaon",
+    "slug": "bizswap-gurgaon",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bizswap",
     "userInterfaceStyle": "automatic",
+    "description": "AI-native marketplace to buy and sell running businesses in Gurgaon.",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "bundleIdentifier": "com.bizswap.gurgaon",
+      "supportsTablet": false
     },
     "android": {
+      "package": "com.bizswap.gurgaon",
+      "versionCode": 1,
       "adaptiveIcon": {
-        "backgroundColor": "#E6F4FE",
+        "backgroundColor": "#4F46E5",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
         "backgroundImage": "./assets/images/android-icon-background.png",
         "monochromeImage": "./assets/images/android-icon-monochrome.png"
       },
+      "permissions": ["android.permission.RECORD_AUDIO", "android.permission.INTERNET"],
+      "blockedPermissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
+        "android.permission.READ_EXTERNAL_STORAGE",
+        "android.permission.WRITE_EXTERNAL_STORAGE",
+        "android.permission.SYSTEM_ALERT_WINDOW"
+      ],
       "predictiveBackGestureEnabled": false
     },
     "web": {
-      "output": "server",
+      "output": "single",
       "favicon": "./assets/images/favicon.png"
     },
     "plugins": [
@@ -28,9 +41,17 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#208AEF",
+          "backgroundColor": "#4F46E5",
           "image": "./assets/images/splash-icon.png",
-          "imageWidth": 76
+          "imageWidth": 96
+        }
+      ],
+      "@maplibre/maplibre-react-native",
+      [
+        "expo-speech-recognition",
+        {
+          "microphonePermission": "BizSwap uses the microphone only when you tap the mic, so you can describe your business by voice.",
+          "speechRecognitionPermission": "BizSwap converts your speech to text on your device."
         }
       ]
     ],

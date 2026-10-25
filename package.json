@@ -1,17 +1,27 @@
 {
-  "name": "bizswap",
+  "name": "bizswap-gurgaon",
   "version": "1.0.0",
   "main": "expo-router/entry",
   "dependencies": {
     "@expo/ui": "~58.0.23",
+    "@expo/vector-icons": "^15.0.2",
+    "@gorhom/bottom-sheet": "^5.2.14",
+    "@maplibre/maplibre-react-native": "^11.5.0",
+    "@react-native-async-storage/async-storage": "2.2.0",
+    "@supabase/supabase-js": "^2.118.0",
     "expo": "~58.0.19",
+    "expo-application": "~58.1.2",
     "expo-constants": "~58.0.13",
+    "expo-crypto": "~58.0.7",
+    "expo-dev-client": "~58.0.15",
     "expo-device": "~58.0.5",
     "expo-font": "~58.0.10",
     "expo-glass-effect": "~58.0.5",
+    "expo-haptics": "~58.0.7",
     "expo-image": "~58.0.17",
     "expo-linking": "~58.0.14",
     "expo-router": "~58.0.26",
+    "expo-speech-recognition": "^58.0.0",
     "expo-splash-screen": "~58.0.11",
     "expo-status-bar": "~58.0.4",
     "expo-symbols": "~58.0.4",
@@ -25,19 +35,37 @@
     "react-native-safe-area-context": "~5.10.1",
     "react-native-screens": "~4.30.0",
     "react-native-web": "~0.21.4",
-    "react-native-worklets": "0.13.0"
+    "react-native-worklets": "0.13.0",
+    "zod": "^4.6.7"
   },
   "devDependencies": {
+    "@types/geojson": "^7946.0.16",
     "@types/react": "~19.3.0",
+    "eas-cli": "^25.3.0",
+    "eslint": "^9.0.0",
+    "eslint-config-expo": "~58.0.4",
+    "supabase": "^2.122.0",
     "typescript": "~6.0.3"
   },
   "scripts": {
-    "start": "expo start",
-    "reset-project": "node ./scripts/reset-project.js",
-    "android": "expo start --android",
-    "ios": "expo start --ios",
+    "start": "expo start --dev-client",
     "web": "expo start --web",
-    "lint": "expo lint"
+    "android": "expo start --android",
+    "typecheck": "tsc --noEmit",
+    "lint": "expo lint",
+    "check": "npm run typecheck && npm run lint",
+    "db:seed:gen": "node scripts/gen-seed.mts",
+    "db:push": "bash scripts/db-push.sh",
+    "setup": "bash scripts/setup.sh",
+    "functions:deploy": "bash scripts/deploy-functions.sh",
+    "smoke": "node scripts/smoke-agents.mts",
+    "assets": "node scripts/gen-store-assets.mts",
+    "build:apk": "eas build -p android --profile preview --non-interactive",
+    "build:aab": "eas build -p android --profile production --non-interactive",
+    "build:dev": "eas build -p android --profile development --non-interactive"
   },
-  "private": true
+  "private": true,
+  "engines": {
+    "node": ">=22.13"
+  }
 }
