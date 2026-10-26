@@ -2,7 +2,7 @@
 // Run: node scripts/ui-check.mts [flow]   flows: seller | buyer | explore | all (default)
 // Requires Google Chrome. Screenshots → store/screenshots/web-*.png (phone viewport).
 import { execSync } from 'node:child_process';
-import { mkdirSync } from 'node:fs';
+import { mkdirSync, readFileSync } from 'node:fs';
 import http from 'node:http';
 import { join } from 'node:path';
 import puppeteer, { type Page } from 'puppeteer-core';
@@ -22,7 +22,7 @@ await new Promise<void>((r) => server.listen(8089, r));
 const browser = await puppeteer.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   headless: true,
-  args: ['--no-sandbox'],
+  args: ['--no-sandbox', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-webgl'],
 });
 const page = await browser.newPage();
 await page.setViewport({ width: 412, height: 892, deviceScaleFactor: 2.625, isMobile: true, hasTouch: true });
@@ -87,8 +87,45 @@ try {
 
   if (flow === 'explore' || flow === 'all') {
     await page.goto(`${base}/explore`, { waitUntil: 'networkidle0' });
-    await wait(4000);
+    await waitText(page, 'businesses for sale');
+    await wait(5000); // tiles
     await shot('07-explore');
+    // tap the pin nearest the map centre via maplibre's rendered features
+    const clicked = await page.evaluate(() => {
+      const canvas = document.querySelector('canvas');
+      if (!canvas) return false;
+      const r = canvas.getBoundingClientRect();
+      for (let dy = -120; dy <= 120; dy += 6)
+        for (let dx = -120; dx <= 120; dx += 6) {
+          const x = r.left + r.width / 2 + dx, y = r.top + r.height / 2 + dy;
+          const px = canvas.getContext('webgl2') || canvas.getContext('webgl');
+          void px;
+          (window as any).__try = (window as any).__try ?? [];
+          (window as any).__try.push([x, y]);
+        }
+      return true;
+    });
+    void clicked;
+    const pts: [number, number][] = await page.evaluate(() => (window as any).__try);
+    for (const [x, y] of pts) {
+      await page.mouse.click(x, y);
+      const open = await page.evaluate(() => document.body.innerText.includes('View details'));
+      if (open) break;
+    }
+    await waitText(page, 'View details', 5000).catch(() => {});
+    await shot('08-explore-sheet');
+    await page.type('input[aria-label="Search businesses"]', 'Cyber Hub');
+    await wait(3500);
+    await shot('09-explore-search');
+    const appEnv = Object.fromEntries(readFileSync(join(root, '.env'), 'utf8').split('\n').filter(Boolean).map((l) => l.split(/=(.*)/s)));
+    const r = await fetch(`${appEnv.EXPO_PUBLIC_SUPABASE_URL}/rest/v1/public_listings?select=id&business_type=eq.pub&order=view_count.desc&limit=1`, {
+      headers: { apikey: appEnv.EXPO_PUBLIC_SUPABASE_ANON_KEY },
+    });
+    const [{ id }] = await r.json();
+    await page.goto(`${base}/listing/${id}`, { waitUntil: 'networkidle0' });
+    await waitText(page, 'Key facts', 20000);
+    await wait(800);
+    await shot('10-listing-detail');
     console.log('✔ explore');
   }
 } catch (e) {

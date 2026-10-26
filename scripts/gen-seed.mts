@@ -67,6 +67,7 @@ const requirements: SeedReq[] = [
 ];
 
 // ───────────────────────── helpers ─────────────────────────
+const inr = (n: number) => (n >= CR ? `₹${(n / CR).toFixed(2).replace(/\.?0+$/, '')} Cr` : `₹${(n / L).toFixed(1).replace(/\.0$/, '')} L`);
 const q = (v: unknown) => (v === null || v === undefined ? 'null' : `'${String(v).replace(/'/g, "''")}'`);
 const j = (v: unknown) => `${q(JSON.stringify(v))}::jsonb`;
 const arr = (v: string[]) => `array[${v.map(q).join(',')}]::text[]`;
@@ -117,7 +118,7 @@ listings.forEach((s, i) => {
   if (!t || !l) throw new Error(`bad seed row ${i}: ${s.type}/${s.at}`);
   const v = valuation(t, s.attrs);
   const attrs = { ...s.attrs, location: l.name };
-  const reasoning = `Indicative ${v.lo.toFixed(1)}–${v.hi.toFixed(1)}× ${t.valuation.basis} of ₹${(v.annual / L).toFixed(1)}L for a ${t.label.toLowerCase()}${Number(s.attrs.lease_remaining_years ?? 99) < 2 ? ', discounted for short lease' : ''}.`;
+  const reasoning = `Indicative ${v.lo.toFixed(1)}–${v.hi.toFixed(1)}× ${t.valuation.basis} of ${inr(v.annual)} for a ${t.label.split(' /')[0].toLowerCase()}${Number(s.attrs.lease_remaining_years ?? 99) < 2 ? ', discounted for short lease' : ''}.`;
   const daysAgo = Math.floor(rand() * 40);
   out.push(`insert into public.listings (business_type,title,summary,attributes,locality_id,location_text,lat,lng,annual_revenue,asking_price,valuation_low,valuation_high,valuation_reasoning,stage,view_count,is_seed,published_at)
 values (${q(s.type)},${q(s.title)},${q(s.summary)},${j(attrs)},${l.id},${q(l.name)},${(l.lat + jitter()).toFixed(6)},${(l.lng + jitter()).toFixed(6)},${v.annual},${s.attrs.asking_price ?? 'null'},${v.low},${v.high},${q(reasoning)},'listed',${Math.floor(rand() * 180) + 5},true,now() - interval '${daysAgo} days');`);

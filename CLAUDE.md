@@ -50,7 +50,7 @@ scripts/            setup/deploy/seed/smoke/assets  store/  Play Store assets   
 - [x] **M1 Data lake** — migrations (all tables, RLS, views, RPCs), config + gazetteer, seed (25 listings, 10 requirements), setup scripts, pushed to Supabase
 - [x] **M2 Agents** — LLM adapter (Gemini/Claude/Groq), intake, listing, valuation agents deployed; smoke tests pass on brief's example sentences
 - [x] **M3 Seller flow** — chat UI, voice input, live field chips, confirmation card, publish
-- [ ] **M4 Discovery** — MapLibre map of Gurgaon, pins, filter chips, search, bottom sheet, listing detail, view/search logging
+- [x] **M4 Discovery** — MapLibre map of Gurgaon, pins, filter chips, search, bottom sheet, listing detail, view/search logging
 - [ ] **M5 Buyer flow** — buyer chat, matchmaker + watch agents, contact capture, inbox
 - [ ] **M6 Dashboards** — seller & buyer dashboards, stage pipeline, interests
 - [ ] **M7 Release** — store assets, privacy policy, README + Mermaid, signed AAB + APK via EAS

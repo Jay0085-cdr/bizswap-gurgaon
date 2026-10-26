@@ -44,6 +44,7 @@
     "eas-cli": "^25.3.0",
     "eslint": "^9.0.0",
     "eslint-config-expo": "~58.0.4",
+    "maplibre-gl": "^4.7.1",
     "postgres": "^3.4.9",
     "puppeteer-core": "^25.16.0",
     "serve-handler": "^6.1.7",
