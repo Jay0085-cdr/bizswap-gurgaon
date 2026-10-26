@@ -7,7 +7,7 @@ import { Icon, T, type IconName } from '@/components/ui';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { getRolePref, setRolePref, type RolePref } from '@/lib/prefs';
-import { supabase } from '@/lib/supabase';
+import { ensureSession, supabase } from '@/lib/supabase';
 import { track } from '@/lib/track';
 
 const OPTIONS: { role: RolePref; icon: IconName; title: string; body: string }[] = [
@@ -29,7 +29,9 @@ export default function Welcome() {
   const choose = async (role: RolePref) => {
     await setRolePref(role);
     track('role_selected', { role }, 'welcome');
-    void supabase.from('profiles').update({ role_pref: role }).then(() => {});
+    void ensureSession().then((sess) => {
+      if (sess) void supabase.from('profiles').update({ role_pref: role }).eq('id', sess.user.id).then(() => {});
+    });
     router.replace('/explore');
     if (role !== 'browse') router.push({ pathname: '/chat/[role]', params: { role } });
   };

@@ -85,6 +85,24 @@ try {
     console.log('✔ buyer flow');
   }
 
+  if (flow === 'all') {
+    await page.goto(`${base}/dashboard`, { waitUntil: 'networkidle0' });
+    await waitText(page, 'Selling \\(1\\)');
+    await clickText(page, 'Selling (1)');
+    await waitText(page, 'Matched buyers');
+    await wait(500);
+    await shot('11-dashboard-seller');
+    await clickText(page, 'Buying (1)');
+    await waitText(page, 'Best fit');
+    await wait(500);
+    await shot('12-dashboard-buyer');
+    await page.goto(`${base}/inbox`, { waitUntil: 'networkidle0' });
+    await waitText(page, 'New match|listing is live');
+    await wait(500);
+    await shot('13-inbox');
+    console.log('✔ dashboards + inbox');
+  }
+
   if (flow === 'explore' || flow === 'all') {
     await page.goto(`${base}/explore`, { waitUntil: 'networkidle0' });
     await waitText(page, 'businesses for sale');
