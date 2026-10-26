@@ -48,7 +48,7 @@ scripts/            setup/deploy/seed/smoke/assets  store/  Play Store assets   
 ## Milestones
 - [x] **M0 Scaffold** — Expo 58 app, theme (light/dark/system), role picker, tabs, Supabase client w/ anonymous session, tracking helpers, EAS profiles, CLAUDE.md, build log
 - [x] **M1 Data lake** — migrations (all tables, RLS, views, RPCs), config + gazetteer, seed (25 listings, 10 requirements), setup scripts, pushed to Supabase
-- [ ] **M2 Agents** — LLM adapter (Gemini/Claude/Groq), intake, listing, valuation agents deployed; smoke tests pass on brief's example sentences
+- [x] **M2 Agents** — LLM adapter (Gemini/Claude/Groq), intake, listing, valuation agents deployed; smoke tests pass on brief's example sentences
 - [ ] **M3 Seller flow** — chat UI, voice input, live field chips, confirmation card, publish
 - [ ] **M4 Discovery** — MapLibre map of Gurgaon, pins, filter chips, search, bottom sheet, listing detail, view/search logging
 - [ ] **M5 Buyer flow** — buyer chat, matchmaker + watch agents, contact capture, inbox

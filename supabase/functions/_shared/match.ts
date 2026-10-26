@@ -39,7 +39,10 @@ const REQ_COLS = 'id,business_type,title,criteria,locality_ids,budget_min,budget
 const MIN_SCORE = 50;
 const TOP_N = 8;
 
-export function preScore(l: Listing, r: Requirement, locs: Locality[]): { score: number; reasons: string[] } {
+// Criteria a buyer states that are deal-breakers when they differ (a dental buyer doesn't want an eye clinic).
+const HARD_TEXT_CRITERIA = ['specialty'];
+
+export function preScore(l: Listing, r: Requirement, locs: Locality[]): { score: number; reasons: string[]; hardMismatch?: boolean } {
   if (l.business_type !== r.business_type) return { score: 0, reasons: ['different business type'] };
   const reasons: string[] = [];
 
@@ -65,6 +68,7 @@ export function preScore(l: Listing, r: Requirement, locs: Locality[]): { score:
 
   // criteria (40)
   const parts: number[] = [];
+  let hardMismatch = false;
   for (const [k, want] of Object.entries(r.criteria ?? {})) {
     if (k === 'areas' || want === null || want === undefined || want === '') continue;
     if (k.startsWith('min_')) {
@@ -79,10 +83,11 @@ export function preScore(l: Listing, r: Requirement, locs: Locality[]): { score:
       const ok = have.includes(want.toLowerCase()) || want.toLowerCase().includes(have);
       parts.push(ok ? 1 : 0);
       if (!ok) reasons.push(`${k} differs`);
+      if (!ok && HARD_TEXT_CRITERIA.includes(k)) hardMismatch = true;
     }
   }
   const crit = parts.length ? (parts.reduce((a, b) => a + b, 0) / parts.length) * 40 : 30;
-  return { score: Math.round(loc + bud + crit), reasons };
+  return { score: Math.round(loc + bud + crit), reasons, hardMismatch };
 }
 
 const Out = z.object({
@@ -114,7 +119,7 @@ function describeReq(r: Requirement) {
   return { wants: r.title, criteria: r.criteria, budget: [r.budget_min, r.budget_max] };
 }
 
-type Pair = { l: Listing; r: Requirement; pre: { score: number; reasons: string[] } };
+type Pair = { l: Listing; r: Requirement; pre: ReturnType<typeof preScore> };
 
 async function refine(pairs: Pair[], anchor: 'listing' | 'requirement', entityId: string) {
   if (!pairs.length) return [] as { listing_id: string; requirement_id: string; score: number; reasons: string[]; pre_score: number }[];
@@ -144,7 +149,15 @@ async function refine(pairs: Pair[], anchor: 'listing' | 'requirement', entityId
   return pairs.map((p) => {
     const id = anchor === 'listing' ? p.r.id : p.l.id;
     const m = byId.get(id);
-    const score = m ? Math.max(p.pre.score - 20, Math.min(p.pre.score + 20, Math.round(m.score))) : p.pre.score;
+    let score = m ? Math.max(p.pre.score - 20, Math.min(p.pre.score + 20, Math.round(m.score))) : p.pre.score;
+    if (p.pre.hardMismatch) score = Math.min(score, 40);
+    // hard budget guard: far over budget is never a good match, whatever the LLM says
+    const price = p.l.asking_price ?? p.l.valuation_low;
+    if (price && p.r.budget_max) {
+      const ratio = price / p.r.budget_max;
+      if (ratio > 2) score = Math.min(score, 30);
+      else if (ratio > 1.5) score = Math.min(score, 50);
+    }
     return { listing_id: p.l.id, requirement_id: p.r.id, score: Math.max(0, Math.min(100, score)), reasons: m?.reasons ?? p.pre.reasons, pre_score: p.pre.score };
   });
 }

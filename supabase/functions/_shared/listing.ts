@@ -95,8 +95,8 @@ export async function publishListing(conv: Conv) {
   try {
     copy = await generateJSON({ agent: 'listing-agent', ...ctx }, {
       system:
-        'You write listing copy for a confidential business-for-sale marketplace in Gurgaon. Title: <= 60 chars, appealing, ANONYMISED — never include the business name, owner name, phone, or exact shop number; you may mention the area type and locality (e.g. "in a premium NH-48 mall"). Summary: 2 factual sentences using ONLY the given facts (₹ in lakh/crore). No exaggeration, no invented facts.',
-      input: JSON.stringify({ type: t.label, locality: loc.name, locality_kind: loc.kind, facts: Object.fromEntries(t.fields.filter((f) => attrs[f.key] !== undefined && f.key !== 'location').map((f) => [f.label, fmtField(f.type, attrs[f.key], f.unit)])) }),
+        'You write listing copy for a confidential business-for-sale marketplace in Gurgaon. Title: <= 60 chars, appealing, ANONYMISED — never include the business name, owner name, phone, or exact shop number; you may mention the area type and locality (e.g. "in a premium NH-48 mall"). Summary: 2 factual sentences using ONLY the given facts (₹ in lakh/crore). No exaggeration, no invented facts. Good title examples: "Busy sports bar in a premium NH-48 mall", "20-year GP practice with 2,000+ patients", "Established CA practice with 120 SME clients". Avoid generic titles like "Pub in X".',
+      input: JSON.stringify({ type: t.label.split(' /')[0].toLowerCase(), locality: loc.name, locality_kind: loc.kind, facts: Object.fromEntries(t.fields.filter((f) => attrs[f.key] !== undefined && f.key !== 'location').map((f) => [f.label, fmtField(f.type, attrs[f.key], f.unit)])) }),
       schema: CopySchema,
       schemaName: 'listing_copy',
       zod: CopyOut,

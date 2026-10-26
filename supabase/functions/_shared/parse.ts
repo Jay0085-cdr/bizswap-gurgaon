@@ -52,7 +52,7 @@ export function matchLocality(text: string | null | undefined, localities: Local
   return best?.loc ?? null;
 }
 
-export const ANYWHERE_RE = /\b(any ?where|any area|all of gurgaon|all over|whole gurgaon|entire gurgaon|no preference|doesn'?t matter|any location|anywhere in gurgaon|gurgaon only|in gurgaon)\b/i;
+export const ANYWHERE_RE = /\b(any ?where|any area|all of gurgaon|all over|whole gurgaon|entire gurgaon|no preference|doesn'?t matter|any location|anywhere in gurgaon)\b/i;
 
 export function isOnlyCity(text: string) {
   return /^\s*(in\s+)?(gurgaon|gurugram)(,?\s*(haryana|india))?\s*\.?\s*$/i.test(text);

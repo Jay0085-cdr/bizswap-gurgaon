@@ -65,7 +65,8 @@ Rules:
 - Keep the period the user stated. If a seller of a pub/restaurant gives MONTHLY billing, convert to daily_billing = monthly/30. If a doctor gives annual billing, monthly_billing = annual/12. If a CA/CS gives monthly billing, annual_billing = monthly*12.
 - "over 2000 patients" → 2000. "20 year practice" → years_running 20. "lease runs 3 more years" → lease_remaining_years 3.
 - locality fields: put the place text in "text" (e.g. "Ambience Mall", "Sector 29", "Golf Course Road"). If they only say "Gurgaon", leave location out.
-${role === 'buyer' ? `- Buyer: "areas" goes in "list" (place names). If they say anywhere / any area / no preference → list ["anywhere"]. A budget range "50L to 1Cr" → budget_min + budget_max; a single budget → budget_max. "with 50 clients" → min_client_count 50; "annual billing of Rs 2 lacs" → min_annual_billing 200000.` : '- Seller: "asking price" / "expecting" / "want X for it" → asking_price.'}
+- specialty: the medical specialty in words, e.g. "general physician practice" → "General physician", "dental clinic" → "Dental".
+${role === 'buyer' ? `- Buyer: "areas" goes in "list" (place names). If they explicitly say anywhere / any area / no preference → list ["anywhere"]. Merely saying "in Gurgaon" is NOT an area preference — omit areas. A budget range "50L to 1Cr" → budget_min + budget_max; a single budget → budget_max. "with 50 clients" → min_client_count 50; "annual billing of Rs 2 lacs" → min_annual_billing 200000.` : '- Seller: "asking price" / "expecting" / "want X for it" → asking_price.'}
 - Later messages override earlier values (corrections). Include ALL known fields from the whole conversation, not only the latest message.
 - Never invent values. Only use keys from the schema for the chosen type.
 - ack: warm, concise (max 25 words), Indian English, use ₹ and lakh/crore. Do not ask questions in ack.
@@ -218,6 +219,14 @@ export async function handleMessage(inp: IntakeInput) {
       if (!def) continue;
       const v = coerce(def, item);
       if (v !== null && v !== undefined) newFields[item.key] = v;
+    }
+    // gap-fill safe text fields the LLM skipped, using deterministic extraction on the latest message
+    const fb = fallbackExtract(text, defs.filter((d) => d.type === 'text' && newFields[d.key] === undefined).map((d) => d.key));
+    for (const [k, v] of Object.entries(fb)) newFields[k] = v;
+    const locDef = defs.find((d) => d.type === 'locality');
+    if (locDef && newFields[locDef.key] === undefined) {
+      const hit = matchLocality(text, cfg.localities);
+      if (hit) newFields[locDef.key] = hit.name;
     }
     ack = out.ack;
     offTopic = !!out.off_topic;

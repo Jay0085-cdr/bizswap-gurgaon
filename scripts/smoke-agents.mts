@@ -50,6 +50,7 @@ console.log('\n② Seller — doctor with missing fields (brief example 2)');
 r = await intake('seller', 'I want to sell my 20 year general physician practice with over 2000 patients and monthly billing of Rs 2 lacs');
 check(r.business_type === 'doctor', 'detected doctor');
 check(r.fields.patient_count === 2000 && r.fields.monthly_billing === 200000 && r.fields.years_running === 20, 'patients 2000, ₹2L/month, 20 yrs');
+check(/general physician/i.test(String(r.fields.specialty)), 'specialty = general physician');
 check(!r.is_complete && r.missing.some((m: any) => m.key === 'location'), 'asks for missing location');
 r = await intake('seller', 'It is in South City 1', r.conversation_id);
 check(r.is_complete, 'complete after follow-up');
@@ -59,6 +60,7 @@ r = await intake('buyer', 'I want to buy a CA practice in Gurgaon with 50 client
 check(r.business_type === 'ca', 'detected CA');
 check(r.fields.min_client_count === 50 && r.fields.min_annual_billing === 200000, 'min 50 clients, ₹2L billing');
 check(r.missing.some((m: any) => m.key === 'budget_max'), 'asks for budget');
+check(r.missing.some((m: any) => m.key === 'areas'), 'asks for preferred area ("in Gurgaon" alone is not an area)');
 r = await intake('buyer', 'Anywhere is fine, budget up to 5 lakh', r.conversation_id);
 check(r.is_complete, 'complete after budget + area');
 const { data: buy, error: buyErr } = await sb.functions.invoke('intake-agent', { body: { action: 'confirm', conversation_id: r.conversation_id } });
