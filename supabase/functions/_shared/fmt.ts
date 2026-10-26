@@ -13,5 +13,6 @@ export function fmtField(type: string, v: unknown, unit?: string) {
   if (type === 'inr') return `${inr(Number(v))}${unit && unit.startsWith('per') ? ` ${unit.replace('per ', '/')}` : ''}`;
   if (type === 'boolean') return v ? 'Yes' : 'No';
   if (Array.isArray(v)) return v.join(', ');
-  return `${v}${unit && type === 'number' ? ` ${unit}` : ''}`;
+  const s = type === 'number' && typeof v === 'number' ? v.toLocaleString('en-IN') : String(v);
+  return `${s}${unit && type === 'number' ? ` ${unit}` : ''}`;
 }

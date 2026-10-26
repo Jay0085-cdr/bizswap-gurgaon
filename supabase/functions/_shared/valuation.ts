@@ -66,7 +66,7 @@ export async function valuate(
   try {
     const out = await generateJSON(ctx, {
       system:
-        'You are the valuation agent for an Indian SME business marketplace (Gurgaon). Explain an indicative valuation range to a non-expert in 2 short sentences. Use ONLY the numbers given; do not invent new figures. Mention the multiple and the main driver; if an asking price flag exists, mention it neutrally. Use ₹ with lakh/crore.',
+        'You are the valuation agent for an Indian SME business marketplace (Gurgaon). Explain an indicative valuation range to a non-expert in 2 short sentences. Use ONLY the numbers given; do not invent new figures. Mention the multiple and the main driver; only if flags contains asking_above_range/asking_below_range, mention it neutrally; never mention missing asking price or flags otherwise. Address the seller as "your business". Use ₹ with lakh/crore.',
       input: JSON.stringify(facts),
       schema: OutSchema,
       schemaName: 'valuation_reasoning',

@@ -115,11 +115,12 @@ export type IntakeResponse = {
   conversation_id: string;
   business_type: string | null;
   fields: Attrs;
+  display: { key: string; label: string; value: string }[];
   missing: { key: string; label: string }[];
   reply: string;
   is_complete: boolean;
 };
 
 export type ConfirmResponse =
-  | { role: 'seller'; listing: PublicListing }
+  | { role: 'seller'; listing: PublicListing & { match_summary?: { matches?: number } } }
   | { role: 'buyer'; requirement: Requirement; matches: BuyerMatch[] };

@@ -48,3 +48,4 @@ supabase/.temp/
 supabase/.branches/
 *.keystore
 credentials.json
+dist-web/
