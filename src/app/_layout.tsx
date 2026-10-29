@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { installGlobalErrorLogging } from '@/components/error-fallback';
 import { FeedbackButton } from '@/components/feedback-button';
 import { Colors } from '@/constants/theme';
 import { ThemePrefProvider, useThemePref } from '@/hooks/use-theme';
@@ -13,6 +14,7 @@ import { ensureSession } from '@/lib/supabase';
 import { track } from '@/lib/track';
 
 SplashScreen.preventAutoHideAsync().catch(() => {});
+installGlobalErrorLogging();
 
 function Root() {
   const { scheme } = useThemePref();
@@ -39,9 +41,18 @@ function Root() {
       <Stack screenOptions={{ headerShadowVisible: false, headerStyle: { backgroundColor: c.background }, headerTintColor: c.text }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="chat/[role]" options={({ route }) => ({ title: 'AI assistant', headerRight: () => <FeedbackButton screen={`chat/${(route.params as { role?: string })?.role ?? ''}`} /> })} />
+        <Stack.Screen
+          name="chat/[role]"
+          options={({ route }) => ({
+            title: 'AI assistant',
+            headerRight: () => <FeedbackButton screen={`chat/${(route.params as { role?: string })?.role ?? ''}`} />,
+          })}
+        />
         <Stack.Screen name="listing/[id]" options={{ title: 'Business details', headerRight: () => <FeedbackButton screen="listing" /> }} />
-        <Stack.Screen name="requirement/[id]" options={{ title: 'Your search', headerRight: () => <FeedbackButton screen="requirement" /> }} />
+        <Stack.Screen
+          name="requirement/[id]"
+          options={{ title: 'Your search', headerRight: () => <FeedbackButton screen="requirement" /> }}
+        />
         <Stack.Screen name="feedback" options={{ presentation: 'modal', title: 'Feedback' }} />
         <Stack.Screen name="contact" options={{ presentation: 'modal', title: 'Stay updated' }} />
         <Stack.Screen name="privacy" options={{ title: 'Privacy policy' }} />
@@ -59,3 +70,5 @@ export default function RootLayout() {
     </GestureHandlerRootView>
   );
 }
+
+export { ErrorBoundary } from '@/components/error-fallback';

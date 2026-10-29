@@ -110,3 +110,5 @@ const styles = StyleSheet.create({
   mic: { width: 44, height: 44, borderRadius: 22, alignItems: 'center', justifyContent: 'center' },
   done: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: Spacing.three, padding: Spacing.four },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

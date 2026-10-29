@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { TypeBadge } from '@/components/listing-card';
-import { Button, Card, Icon, Pill, StageStepper, T } from '@/components/ui';
+import { Button, Card, Empty, Icon, Pill, StageStepper, T } from '@/components/ui';
 import { STAGE_LABEL, Spacing, type Stage } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { typeOf } from '@/lib/config';
@@ -53,7 +53,15 @@ export default function ListingDetail() {
   }, [id, source]);
 
   if (loading) return <ActivityIndicator style={{ marginTop: 80 }} />;
-  if (!l) return <T style={{ margin: Spacing.four }}>This listing is no longer available.</T>;
+  if (!l)
+    return (
+      <Empty
+        icon="storefront-outline"
+        title="Listing not available"
+        body="It may have been closed or removed by the seller."
+        action={<Button title="Browse the map" icon="map" onPress={() => router.replace('/explore')} />}
+      />
+    );
 
   const t = typeOf(l.business_type);
   const fields = (t?.fields ?? []).filter((f) => f.key !== 'asking_price');
@@ -148,7 +156,11 @@ export default function ListingDetail() {
             {l.view_count} views. Buyers who tap “I’m interested” appear in your dashboard.
           </T>
           {SELLER_NEXT[l.stage] && (
-            <Button title={`Mark as ${STAGE_LABEL[SELLER_NEXT[l.stage]!]}`} variant="secondary" onPress={() => advance(SELLER_NEXT[l.stage]!)} />
+            <Button
+              title={`Mark as ${STAGE_LABEL[SELLER_NEXT[l.stage]!]}`}
+              variant="secondary"
+              onPress={() => advance(SELLER_NEXT[l.stage]!)}
+            />
           )}
         </Card>
       ) : (
@@ -176,3 +188,5 @@ const styles = StyleSheet.create({
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   fact: { flexDirection: 'row', justifyContent: 'space-between', paddingVertical: 4 },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

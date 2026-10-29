@@ -1,17 +1,30 @@
 // Thin client for the Supabase Edge Function agents. No LLM keys ever live in the app.
 import { ensureSession, supabase } from '@/lib/supabase';
+import { track } from '@/lib/track';
 import type { ConfirmResponse, IntakeResponse } from '@/lib/types';
 
 async function call<T>(fn: string, body: Record<string, unknown>): Promise<T> {
-  await ensureSession();
+  const session = await ensureSession();
+  if (!session) throw new Error('You seem to be offline — check your internet and try again.');
   const { data, error } = await supabase.functions.invoke(fn, { body });
   if (error) {
+    let status = 0;
     let detail = error.message;
     try {
       const ctx = (error as { context?: Response }).context;
-      if (ctx) detail = (await ctx.json())?.error ?? detail;
+      if (ctx) {
+        status = ctx.status;
+        detail = (await ctx.json())?.error ?? detail;
+      }
     } catch {}
-    throw new Error(detail);
+    track('agent_error', { fn, status, detail: String(detail).slice(0, 300) });
+    throw new Error(
+      !status
+        ? 'Couldn’t reach our servers — check your internet and try again.'
+        : status >= 500
+          ? 'Our AI had a hiccup. Please try again in a moment.'
+          : 'Something went wrong — please try again.',
+    );
   }
   return data as T;
 }

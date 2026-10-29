@@ -111,7 +111,11 @@ export type ChatTurn = {
   pending?: boolean;
 };
 
+/** 'quick' = the AI was busy/unavailable and a rules-based fallback answered. */
+export type AiMode = 'full' | 'quick';
+
 export type IntakeResponse = {
+  ai_mode?: AiMode;
   conversation_id: string;
   business_type: string | null;
   fields: Attrs;
@@ -121,6 +125,7 @@ export type IntakeResponse = {
   is_complete: boolean;
 };
 
-export type ConfirmResponse =
+export type ConfirmResponse = { ai_mode?: AiMode } & (
   | { role: 'seller'; listing: PublicListing & { match_summary?: { matches?: number } } }
-  | { role: 'buyer'; requirement: Requirement; matches: BuyerMatch[] };
+  | { role: 'buyer'; requirement: Requirement; matches: BuyerMatch[] }
+);

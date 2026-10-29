@@ -20,7 +20,15 @@ export default function Settings() {
   const { pref, setPref } = useThemePref();
 
   const deleteData = async () => {
-    if (!(await confirm('Delete all my data?', 'This permanently removes your listings, searches, chats and contact details.', 'Delete', true))) return;
+    if (
+      !(await confirm(
+        'Delete all my data?',
+        'This permanently removes your listings, searches, chats and contact details.',
+        'Delete',
+        true,
+      ))
+    )
+      return;
     await ensureSession();
     const { error } = await supabase.rpc('delete_my_data');
     if (error) return notify('Could not delete', error.message);
@@ -97,3 +105,5 @@ const styles = StyleSheet.create({
   content: { padding: Spacing.three, gap: Spacing.three },
   row: { flexDirection: 'row', gap: Spacing.two, flexWrap: 'wrap' },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

@@ -75,7 +75,13 @@ export default function Dashboard() {
               icon="storefront-outline"
               title="No listings yet"
               body="Describe your business by voice or text — our agents create, value and publish the listing for you."
-              action={<Button title="Sell a business" icon="mic" onPress={() => router.push({ pathname: '/chat/[role]', params: { role: 'seller' } })} />}
+              action={
+                <Button
+                  title="Sell a business"
+                  icon="mic"
+                  onPress={() => router.push({ pathname: '/chat/[role]', params: { role: 'seller' } })}
+                />
+              }
             />
           )
         ) : (
@@ -118,7 +124,11 @@ export default function Dashboard() {
                           {m.budget_max ? `Budget up to ${formatINRCompact(m.budget_max)}` : 'Budget not stated'} · {m.reasons?.[0] ?? ''}
                         </T>
                       </View>
-                      {m.buyer_interested ? <Pill label="Interested" color={theme.success} bg={theme.card} /> : <Pill label={`${m.score}%`} />}
+                      {m.buyer_interested ? (
+                        <Pill label="Interested" color={theme.success} bg={theme.card} />
+                      ) : (
+                        <Pill label={`${m.score}%`} />
+                      )}
                     </View>
                   ))}
                 </Card>
@@ -128,39 +138,43 @@ export default function Dashboard() {
         ))}
 
       {active === 'buyer' &&
-        (reqs.length === 0 ? (
-          loaded && (
-            <Empty
-              icon="search-outline"
-              title="No searches yet"
-              body="Tell our agent what you want to buy — it finds matches now and keeps watching for new ones."
-              action={<Button title="Buy a business" icon="mic" onPress={() => router.push({ pathname: '/chat/[role]', params: { role: 'buyer' } })} />}
-            />
-          )
-        ) : (
-          reqs.map((r) => (
-            <Card key={r.id} onPress={() => router.push({ pathname: '/requirement/[id]', params: { id: r.id } })}>
-              <View style={styles.head}>
-                <TypeBadge typeKey={r.business_type} />
-                <View style={{ flex: 1 }}>
-                  <T type="smallBold" numberOfLines={2}>
-                    {r.title}
-                  </T>
-                  <T type="small" color="textSecondary">
-                    {typeOf(r.business_type)?.label} · {r.budget_max ? `up to ${formatINRCompact(r.budget_max)}` : 'any budget'}
-                  </T>
+        (reqs.length === 0
+          ? loaded && (
+              <Empty
+                icon="search-outline"
+                title="No searches yet"
+                body="Tell our agent what you want to buy — it finds matches now and keeps watching for new ones."
+                action={
+                  <Button
+                    title="Buy a business"
+                    icon="mic"
+                    onPress={() => router.push({ pathname: '/chat/[role]', params: { role: 'buyer' } })}
+                  />
+                }
+              />
+            )
+          : reqs.map((r) => (
+              <Card key={r.id} onPress={() => router.push({ pathname: '/requirement/[id]', params: { id: r.id } })}>
+                <View style={styles.head}>
+                  <TypeBadge typeKey={r.business_type} />
+                  <View style={{ flex: 1 }}>
+                    <T type="smallBold" numberOfLines={2}>
+                      {r.title}
+                    </T>
+                    <T type="small" color="textSecondary">
+                      {typeOf(r.business_type)?.label} · {r.budget_max ? `up to ${formatINRCompact(r.budget_max)}` : 'any budget'}
+                    </T>
+                  </View>
+                  {r.watch && <Pill label="Watching" />}
                 </View>
-                {r.watch && <Pill label="Watching" />}
-              </View>
-              <StageStepper stage={r.stage} />
-              <View style={styles.stats}>
-                <Stat label="Matches" value={String(r.match_count ?? 0)} />
-                <Stat label="Best fit" value={r.best_score ? `${r.best_score}%` : '—'} />
-                <Stat label="Stage" value={STAGE_LABEL[r.stage]} />
-              </View>
-            </Card>
-          ))
-        ))}
+                <StageStepper stage={r.stage} />
+                <View style={styles.stats}>
+                  <Stat label="Matches" value={String(r.match_count ?? 0)} />
+                  <Stat label="Best fit" value={r.best_score ? `${r.best_score}%` : '—'} />
+                  <Stat label="Stage" value={STAGE_LABEL[r.stage]} />
+                </View>
+              </Card>
+            )))}
     </ScrollView>
   );
 }
@@ -172,3 +186,5 @@ const styles = StyleSheet.create({
   stats: { flexDirection: 'row', flexWrap: 'wrap', gap: Spacing.two },
   match: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two, padding: Spacing.two, borderRadius: 10 },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

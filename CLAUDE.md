@@ -23,6 +23,7 @@ Also read `AGENTS.md` (Expo SDK 58 rules — don't trust memory for Expo APIs; c
 | Deploy agents | `npm run functions:deploy` |
 | Agent smoke tests | `npm run smoke` |
 | Store assets | `npm run assets` |
+| Closed-test health (DAU, AI calls, fallback %, errors) | `npm run stats` (`-- --days 3`) |
 | Tester feedback report (feedback-agent) | `npm run feedback` (`-- --days 7`, `-- --raw`) → also saved to `reports/` (gitignored) |
 | Deploy web demo + privacy page | `npm run web:deploy` → https://jay0085-cdr.github.io/bizswap-gurgaon/ |
 | UI test against live site | `UI_BASE=https://jay0085-cdr.github.io/bizswap-gurgaon node scripts/ui-check.mts all` |
@@ -47,6 +48,8 @@ scripts/            setup/deploy/seed/smoke/assets  store/  Play Store assets   
 - Client writes only to: profiles, contacts, events, search_events, listing_views, saved_searches, notifications.read_at, and via RPCs. Everything else is written by agents (service role).
 - Style: functional components, `StyleSheet.create`, theme via `useTheme()`; primitives in `src/components/ui.tsx`. Keep comments sparse.
 - Web: anything native-only needs a `.web.ts(x)` twin (see `use-speech.web.ts`, `listing-map.web.tsx`). Use `confirm`/`notify` from `src/lib/dialog.ts`, never `Alert.alert` (no-op on web).
+- Every route file ends with `export { ErrorBoundary } from '@/components/error-fallback';` (friendly screen + `client_error` event).
+- LLM calls go through `generateJSON` only: cache (`llm_cache`, 7 days) → provider with retry/backoff on 429/5xx (not on timeouts) → fallback. A fallback marks the request degraded and responses carry `ai_mode: 'quick'`; the chat shows "AI is busy, using quick mode".
 - Package ID lives only in `app.config.ts` (`APP_PACKAGE_ID` env overrides).
 - Before each commit: `npm run check`. Log AI usage in `docs/AI_BUILD_LOG.md`.
 

@@ -33,3 +33,5 @@ export default function Privacy() {
 const styles = StyleSheet.create({
   content: { padding: Spacing.four, gap: Spacing.three, paddingBottom: Spacing.six },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

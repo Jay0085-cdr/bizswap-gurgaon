@@ -99,6 +99,8 @@ sequenceDiagram
 | **feedback-agent** | Admin-only. Clusters closed-test feedback (sent from the in-app feedback button, tagged with app version and screen) into themes, with severity, a summary and a suggested fix. **Code** counts items and testers and ranks themes by frequency × severity, then stores the report in `feedback_reports`. Run with `npm run feedback`. | Keyword grouping |
 | **watch-agent** | Turns new matches into inbox notifications for buyers and sellers, keeps saved searches for users who shared contact details, and runs a pg_cron sweep every 30 minutes. | — (no LLM) |
 
+**Built for flaky free tiers:** identical prompts are served from a 7-day `llm_cache`. Rate limits and 5xx errors are retried with backoff that follows Gemini's own retry delay, within a 30 s budget. When the AI still can't answer, a rules-based fallback does, and the app says *"AI is busy, using quick mode"* instead of failing. Every route has an error boundary that logs to `events`, and `npm run stats` shows daily testers, AI calls, fallback rate and errors.
+
 **Provider-swappable:** set `LLM_PROVIDER=gemini|anthropic|groq` and `LLM_MODEL`, and optionally `LLM_FALLBACK_PROVIDER`. Gemini uses the Interactions API with a JSON schema, Claude uses forced tool use, and Groq uses OpenAI-compatible JSON mode. Every call is validated with zod, retried once with the validation error if it fails, and **logged to `agent_runs`** (input, output, model, latency, tokens).
 
 **Adding a business type needs no code.** Add an entry to `shared/business-types.json` (fields, which are required, the follow-up question for each, valuation multiples), then run `npm run db:push`.
@@ -162,6 +164,7 @@ Everything is in `/store`: the icon, feature graphic, eight 9:16 screenshots, th
 | `npm run assets` | Regenerates the icon, splash, feature graphic, Play screenshots and privacy HTML from code |
 | `npm run db:push` | Regenerates the seed and pushes migrations (needs only the DB password) |
 | `npm run functions:deploy` | Redeploys all agents |
+| `npm run stats` | Daily active testers, AI calls, cache hits, fallback rate, latency, errors, feedback |
 | `npm run feedback` | Runs the feedback-agent and prints the ranked tester-feedback report |
 | `npm run web:deploy` | Builds the web app, checks it for leaked secrets, publishes it plus the privacy policy to GitHub Pages (`gh-pages` branch) |
 

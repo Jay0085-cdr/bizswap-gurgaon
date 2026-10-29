@@ -14,7 +14,11 @@ import { ensureSession, supabase } from '@/lib/supabase';
 import { trackSearch, trackView } from '@/lib/track';
 import type { PublicListing } from '@/lib/types';
 
-const norm = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+const norm = (s: string) =>
+  s
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, ' ')
+    .trim();
 
 export default function Explore() {
   const theme = useTheme();
@@ -26,6 +30,7 @@ export default function Explore() {
   const [types, setTypes] = useState<string[]>([]);
   const [listings, setListings] = useState<PublicListing[]>([]);
   const [loading, setLoading] = useState(true);
+  const [loadError, setLoadError] = useState(false);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [focus, setFocus] = useState<{ lat: number; lng: number; zoom?: number; key: number } | null>(null);
   const [showList, setShowList] = useState(false);
@@ -43,6 +48,7 @@ export default function Explore() {
     const { data, error } = await supabase.rpc('search_listings', { p_query: q.trim() || null, p_types: t.length ? t : null });
     if (seq !== reqSeq.current) return;
     setLoading(false);
+    setLoadError(!!error);
     if (error) return;
     const rows = (data ?? []) as PublicListing[];
     setListings(rows);
@@ -77,7 +83,6 @@ export default function Explore() {
     }, []),
   );
 
-
   const pins = useMemo(() => listings.map((l) => ({ id: l.id, lat: l.lat, lng: l.lng, color: typeColor(l.business_type) })), [listings]);
   const selected = listings.find((l) => l.id === selectedId) ?? null;
 
@@ -90,7 +95,14 @@ export default function Explore() {
 
   return (
     <View style={{ flex: 1, backgroundColor: theme.background }}>
-      <ListingMap pins={pins} selectedId={selectedId} onSelect={setSelectedId} focus={focus} dark={scheme === 'dark'} bottomInset={selected ? 230 : 70} />
+      <ListingMap
+        pins={pins}
+        selectedId={selectedId}
+        onSelect={setSelectedId}
+        focus={focus}
+        dark={scheme === 'dark'}
+        bottomInset={selected ? 230 : 70}
+      />
 
       {/* search + filters */}
       <View style={[styles.top, { paddingTop: insets.top + Spacing.two }]} pointerEvents="box-none">
@@ -115,7 +127,14 @@ export default function Explore() {
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
           <Chip label="All" selected={types.length === 0} onPress={() => setTypes([])} />
           {businessTypes().map((t) => (
-            <Chip key={t.key} label={t.plural} icon={t.icon} color={t.color} selected={types.includes(t.key)} onPress={() => toggleType(t.key)} />
+            <Chip
+              key={t.key}
+              label={t.plural}
+              icon={t.icon}
+              color={t.color}
+              selected={types.includes(t.key)}
+              onPress={() => toggleType(t.key)}
+            />
           ))}
         </ScrollView>
       </View>
@@ -134,15 +153,39 @@ export default function Explore() {
         ) : (
           <View style={styles.bar}>
             <Pressable
-              onPress={() => setShowList(true)}
+              onPress={() => {
+                if (loadError) void fetchListings(query, types, false);
+                else if (!loading && listings.length === 0 && (query || types.length)) {
+                  setQuery('');
+                  setTypes([]);
+                } else setShowList(true);
+              }}
               style={[styles.countPill, { backgroundColor: theme.card, borderColor: theme.border }]}
               accessibilityRole="button">
-              <Icon name="list" size={16} color={theme.primary} />
-              <T type="smallBold">{loading ? 'Searching…' : `${listings.length} businesses for sale`}</T>
+              <Icon name={loadError ? 'refresh' : 'list'} size={16} color={theme.primary} />
+              <T type="smallBold">
+                {loading
+                  ? 'Searching…'
+                  : loadError
+                    ? 'Couldn’t load — tap to retry'
+                    : listings.length === 0 && (query || types.length)
+                      ? 'No matches here — tap to clear search'
+                      : `${listings.length} businesses for sale`}
+              </T>
             </Pressable>
             <View style={styles.row}>
-              <Button title="Sell" icon="storefront" style={styles.fab} onPress={() => router.push({ pathname: '/chat/[role]', params: { role: 'seller' } })} />
-              <Button title="Buy" icon="search" style={styles.fab} onPress={() => router.push({ pathname: '/chat/[role]', params: { role: 'buyer' } })} />
+              <Button
+                title="Sell"
+                icon="storefront"
+                style={styles.fab}
+                onPress={() => router.push({ pathname: '/chat/[role]', params: { role: 'seller' } })}
+              />
+              <Button
+                title="Buy"
+                icon="search"
+                style={styles.fab}
+                onPress={() => router.push({ pathname: '/chat/[role]', params: { role: 'buyer' } })}
+              />
             </View>
           </View>
         )}
@@ -189,7 +232,15 @@ const styles = StyleSheet.create({
   searchInput: { flex: 1, fontSize: 15, height: 50 },
   chips: { paddingHorizontal: Spacing.three, gap: Spacing.two },
   bottom: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: Spacing.three },
-  sheet: { borderRadius: Radius.lg, borderWidth: StyleSheet.hairlineWidth, padding: Spacing.three, gap: Spacing.two, elevation: 10, shadowOpacity: 0.2, shadowRadius: 16 },
+  sheet: {
+    borderRadius: Radius.lg,
+    borderWidth: StyleSheet.hairlineWidth,
+    padding: Spacing.three,
+    gap: Spacing.two,
+    elevation: 10,
+    shadowOpacity: 0.2,
+    shadowRadius: 16,
+  },
   grabber: { alignSelf: 'center', width: 40, height: 4, borderRadius: 2, marginBottom: Spacing.one },
   bar: { gap: Spacing.two },
   countPill: {
@@ -205,5 +256,13 @@ const styles = StyleSheet.create({
   },
   row: { flexDirection: 'row', gap: Spacing.two },
   fab: { flex: 1, elevation: 6 },
-  listHead: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', padding: Spacing.three, borderBottomWidth: StyleSheet.hairlineWidth },
+  listHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    padding: Spacing.three,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+  },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

@@ -58,7 +58,8 @@ export default function Inbox() {
       void supabase.from('notifications').update({ read_at: new Date().toISOString() }).eq('id', n.id);
     }
     track('notification_open', { kind: n.kind }, 'inbox');
-    if (n.kind === 'match' && n.payload.listing_id) router.push({ pathname: '/listing/[id]', params: { id: n.payload.listing_id, source: 'inbox' } });
+    if (n.kind === 'match' && n.payload.listing_id)
+      router.push({ pathname: '/listing/[id]', params: { id: n.payload.listing_id, source: 'inbox' } });
     else if (n.payload.listing_id) router.push({ pathname: '/listing/[id]', params: { id: n.payload.listing_id } });
     else if (n.payload.requirement_id) router.push({ pathname: '/requirement/[id]', params: { id: n.payload.requirement_id } });
   };
@@ -99,10 +100,7 @@ export default function Inbox() {
       renderItem={({ item }) => (
         <Pressable
           onPress={() => open(item)}
-          style={({ pressed }) => [
-            styles.row,
-            { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 },
-          ]}>
+          style={({ pressed }) => [styles.row, { backgroundColor: theme.card, borderColor: theme.border, opacity: pressed ? 0.85 : 1 }]}>
           <View style={[styles.icon, { backgroundColor: theme.primarySoft }]}>
             <Icon name={ICON[item.kind] ?? 'notifications'} size={18} color={theme.primary} />
           </View>
@@ -124,7 +122,16 @@ export default function Inbox() {
 
 const styles = StyleSheet.create({
   content: { padding: Spacing.three, gap: Spacing.two, flexGrow: 1 },
-  row: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three, padding: Spacing.three, borderRadius: Radius.md, borderWidth: StyleSheet.hairlineWidth },
+  row: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: Spacing.three,
+    padding: Spacing.three,
+    borderRadius: Radius.md,
+    borderWidth: StyleSheet.hairlineWidth,
+  },
   icon: { width: 38, height: 38, borderRadius: 19, alignItems: 'center', justifyContent: 'center' },
   dot: { width: 10, height: 10, borderRadius: 5 },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

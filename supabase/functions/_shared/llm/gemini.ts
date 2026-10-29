@@ -11,7 +11,7 @@ export function gemini(apiKey: string, model = 'gemini-3.5-flash-lite'): LlmProv
       const res = await fetch(ENDPOINT, {
         method: 'POST',
         headers: { 'content-type': 'application/json', 'x-goog-api-key': apiKey },
-        signal: AbortSignal.timeout(25_000),
+        signal: AbortSignal.timeout(20_000),
         body: JSON.stringify({
           model,
           store: false,
@@ -27,7 +27,10 @@ export function gemini(apiKey: string, model = 'gemini-3.5-flash-lite'): LlmProv
       const body = await res.json().catch(() => ({}));
       if (!res.ok) {
         const msg = body?.error?.message ?? res.statusText;
-        throw new LlmError(`gemini ${res.status}: ${msg}`, res.status === 429 ? 'quota' : 'http', res.status);
+        // 429s carry google.rpc.RetryInfo { retryDelay: "12s" }; honour it when retrying
+        const delay = (body?.error?.details ?? []).find((d: { retryDelay?: string }) => d.retryDelay)?.retryDelay;
+        const retryAfterMs = delay ? parseFloat(delay) * 1000 : Number(res.headers.get('retry-after')) * 1000 || undefined;
+        throw new LlmError(`gemini ${res.status}: ${msg}`, res.status === 429 ? 'quota' : 'http', res.status, retryAfterMs);
       }
       const out = (body.steps ?? []).find((s: { type: string }) => s.type === 'model_output');
       const text = (out?.content ?? []).map((c: { text?: string }) => c.text ?? '').join('');

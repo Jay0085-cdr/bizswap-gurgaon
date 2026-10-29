@@ -1,4 +1,5 @@
 import { admin } from './db.ts';
+import { isDegraded, runRequest } from './request-state.ts';
 
 export const cors = {
   'Access-Control-Allow-Origin': '*',
@@ -6,8 +7,10 @@ export const cors = {
   'Access-Control-Allow-Methods': 'POST, OPTIONS',
 };
 
+/** Object bodies get ai_mode: 'quick' when any LLM step in this request fell back to rules. */
 export function json(body: unknown, status = 200) {
-  return new Response(JSON.stringify(body), { status, headers: { ...cors, 'content-type': 'application/json' } });
+  const out = body && typeof body === 'object' && !Array.isArray(body) ? { ...body, ai_mode: isDegraded() ? 'quick' : 'full' } : body;
+  return new Response(JSON.stringify(out), { status, headers: { ...cors, 'content-type': 'application/json' } });
 }
 
 export class HttpError extends Error {
@@ -35,7 +38,7 @@ export function serve(handler: (req: Request) => Promise<Response>) {
   Deno.serve(async (req) => {
     if (req.method === 'OPTIONS') return new Response('ok', { headers: cors });
     try {
-      return await handler(req);
+      return await runRequest(() => handler(req));
     } catch (e) {
       const status = e instanceof HttpError ? e.status : 500;
       console.error(e);

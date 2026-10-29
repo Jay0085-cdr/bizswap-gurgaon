@@ -1,17 +1,7 @@
 import * as Haptics from 'expo-haptics';
 import { router, Stack, useLocalSearchParams } from 'expo-router';
 import { useRef, useState } from 'react';
-import {
-  ActivityIndicator,
-  FlatList,
-  KeyboardAvoidingView,
-  Platform,
-  Pressable,
-  StyleSheet,
-  Text,
-  TextInput,
-  View,
-} from 'react-native';
+import { ActivityIndicator, FlatList, KeyboardAvoidingView, Platform, Pressable, StyleSheet, Text, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { ListingCard } from '@/components/listing-card';
@@ -75,6 +65,8 @@ export default function ChatScreen() {
   const [publishing, setPublishing] = useState(false);
   const [result, setResult] = useState<ConfirmResponse | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [quickMode, setQuickMode] = useState(false);
+  const [slow, setSlow] = useState(false);
 
   const scrollEnd = () => setTimeout(() => listRef.current?.scrollToEnd({ animated: true }), 60);
 
@@ -84,9 +76,14 @@ export default function ChatScreen() {
     setError(null);
     setInput('');
     const id = `${Date.now()}`;
-    setTurns((t) => [...t, { id, sender: 'user', text: msg, input_mode: mode }, { id: `${id}-p`, sender: 'agent', text: '…', pending: true }]);
+    setTurns((t) => [
+      ...t,
+      { id, sender: 'user', text: msg, input_mode: mode },
+      { id: `${id}-p`, sender: 'agent', text: '…', pending: true },
+    ]);
     scrollEnd();
     setBusy(true);
+    const slowTimer = setTimeout(() => setSlow(true), 8000);
     try {
       const res = await agents.intake({
         role,
@@ -96,12 +93,15 @@ export default function ChatScreen() {
         stt: stt ? { confidence: stt.confidence, alternatives: stt.alternatives, raw: stt.text } : undefined,
       });
       setState(res);
+      setQuickMode(res.ai_mode === 'quick');
       setTurns((t) => t.map((x) => (x.id === `${id}-p` ? { id: `${id}-a`, sender: 'agent', text: res.reply } : x)));
       if (res.is_complete) Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
     } catch (e) {
       setTurns((t) => t.filter((x) => x.id !== `${id}-p`));
       setError((e as Error).message || 'Something went wrong — please try again.');
     } finally {
+      clearTimeout(slowTimer);
+      setSlow(false);
       setBusy(false);
       scrollEnd();
     }
@@ -116,6 +116,7 @@ export default function ChatScreen() {
     try {
       const res = await agents.confirm(state.conversation_id);
       setResult(res);
+      if (res.ai_mode === 'quick') setQuickMode(true);
       track(role === 'seller' ? 'listing_published' : 'requirement_saved', { conversation_id: state.conversation_id }, 'chat');
       Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
       scrollEnd();
@@ -137,7 +138,10 @@ export default function ChatScreen() {
             Try saying
           </T>
           {INTRO[role].examples.map((ex) => (
-            <Pressable key={ex} onPress={() => send(ex, 'text')} style={[styles.example, { borderColor: theme.border, backgroundColor: theme.card }]}>
+            <Pressable
+              key={ex}
+              onPress={() => send(ex, 'text')}
+              style={[styles.example, { borderColor: theme.border, backgroundColor: theme.card }]}>
               <T type="small">“{ex}”</T>
             </Pressable>
           ))}
@@ -147,8 +151,14 @@ export default function ChatScreen() {
       {state && !done && (state.display.length > 0 || state.missing.length > 0) && (
         <Card>
           <View style={styles.rowBetween}>
-            <T type="smallBold">{type ? `${type.label} — ${role === 'seller' ? 'listing' : 'requirement'} summary` : 'What I’ve understood'}</T>
-            {state.is_complete ? <Pill label="Complete" color={theme.success} bg={theme.backgroundElement} /> : <Pill label={`${state.missing.length} to go`} color={theme.warning} bg={theme.backgroundElement} />}
+            <T type="smallBold">
+              {type ? `${type.label} — ${role === 'seller' ? 'listing' : 'requirement'} summary` : 'What I’ve understood'}
+            </T>
+            {state.is_complete ? (
+              <Pill label="Complete" color={theme.success} bg={theme.backgroundElement} />
+            ) : (
+              <Pill label={`${state.missing.length} to go`} color={theme.warning} bg={theme.backgroundElement} />
+            )}
           </View>
           {state.display.map((d) => (
             <View key={d.key} style={styles.fieldRow}>
@@ -195,9 +205,13 @@ export default function ChatScreen() {
           <View style={styles.rowBetween}>
             <T type="subtitle">🎉 Your listing is live</T>
           </View>
-          <ListingCard listing={result.listing} onPress={() => router.push({ pathname: '/listing/[id]', params: { id: result.listing.id } })} />
+          <ListingCard
+            listing={result.listing}
+            onPress={() => router.push({ pathname: '/listing/[id]', params: { id: result.listing.id } })}
+          />
           <T type="small" color="textSecondary">
-            Indicative value {formatRange(result.listing.valuation_low, result.listing.valuation_high)}. {result.listing.valuation_reasoning}
+            Indicative value {formatRange(result.listing.valuation_low, result.listing.valuation_high)}.{' '}
+            {result.listing.valuation_reasoning}
           </T>
           <T type="smallBold" color="primary">
             {result.listing.match_summary?.matches
@@ -206,14 +220,22 @@ export default function ChatScreen() {
           </T>
           <View style={styles.row}>
             <Button title="Dashboard" variant="secondary" style={{ flex: 1 }} onPress={() => router.replace('/dashboard')} />
-            <Button title="See on map" style={{ flex: 1 }} onPress={() => router.replace({ pathname: '/explore', params: { focus: result.listing.id } })} />
+            <Button
+              title="See on map"
+              style={{ flex: 1 }}
+              onPress={() => router.replace({ pathname: '/explore', params: { focus: result.listing.id } })}
+            />
           </View>
         </Card>
       )}
 
       {result?.role === 'buyer' && (
         <Card>
-          <T type="subtitle">{result.matches.length ? `✨ ${result.matches.length} matching business${result.matches.length === 1 ? '' : 'es'}` : 'Requirement saved'}</T>
+          <T type="subtitle">
+            {result.matches.length
+              ? `✨ ${result.matches.length} matching business${result.matches.length === 1 ? '' : 'es'}`
+              : 'Requirement saved'}
+          </T>
           <T type="small" color="textSecondary">
             {result.matches.length
               ? 'Ranked by our matchmaker agent. Tap one to see details.'
@@ -228,11 +250,21 @@ export default function ChatScreen() {
               onPress={() => router.push({ pathname: '/listing/[id]', params: { id: m.listing_id, source: 'match' } })}
             />
           ))}
-          <Button title="Get notified of new matches" icon="notifications-outline" variant="secondary" onPress={() => router.push('/contact')} />
+          <Button
+            title="Get notified of new matches"
+            icon="notifications-outline"
+            variant="secondary"
+            onPress={() => router.push('/contact')}
+          />
           <Button title="Go to dashboard" variant="ghost" onPress={() => router.replace('/dashboard')} />
         </Card>
       )}
 
+      {quickMode && !error && (
+        <T type="small" color="textSecondary" style={{ textAlign: 'center' }}>
+          ⚡ AI is busy, using quick mode — answers may be simpler. Everything still works.
+        </T>
+      )}
       {error && (
         <T type="small" color="danger" style={{ textAlign: 'center' }}>
           {error}
@@ -242,7 +274,10 @@ export default function ChatScreen() {
   );
 
   return (
-    <KeyboardAvoidingView style={{ flex: 1, backgroundColor: theme.background }} behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90}>
+    <KeyboardAvoidingView
+      style={{ flex: 1, backgroundColor: theme.background }}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={90}>
       <Stack.Screen options={{ title: role === 'seller' ? 'Sell a business' : 'Buy a business' }} />
       <FlatList
         ref={listRef}
@@ -260,10 +295,22 @@ export default function ChatScreen() {
                   styles.bubble,
                   mine
                     ? { backgroundColor: theme.userBubble, borderBottomRightRadius: 4 }
-                    : { backgroundColor: theme.agentBubble, borderBottomLeftRadius: 4, borderColor: theme.border, borderWidth: StyleSheet.hairlineWidth },
+                    : {
+                        backgroundColor: theme.agentBubble,
+                        borderBottomLeftRadius: 4,
+                        borderColor: theme.border,
+                        borderWidth: StyleSheet.hairlineWidth,
+                      },
                 ]}>
                 {item.pending ? (
-                  <ActivityIndicator color={theme.textSecondary} />
+                  <View style={{ flexDirection: 'row', alignItems: 'center', gap: Spacing.two }}>
+                    <ActivityIndicator color={theme.textSecondary} />
+                    {slow && (
+                      <T type="small" color="textSecondary">
+                        Taking a bit longer than usual…
+                      </T>
+                    )}
+                  </View>
                 ) : (
                   <RichText text={item.text} color={mine ? '#fff' : theme.text} />
                 )}
@@ -279,7 +326,11 @@ export default function ChatScreen() {
       />
 
       {!done && (
-        <View style={[styles.composer, { paddingBottom: Math.max(insets.bottom, Spacing.two), borderTopColor: theme.border, backgroundColor: theme.card }]}>
+        <View
+          style={[
+            styles.composer,
+            { paddingBottom: Math.max(insets.bottom, Spacing.two), borderTopColor: theme.border, backgroundColor: theme.card },
+          ]}>
           {speech.listening && (
             <View style={styles.listening}>
               <Chip label="Listening… tap to stop" selected color={theme.danger} icon="radio-button-on" onPress={speech.stop} />
@@ -307,7 +358,11 @@ export default function ChatScreen() {
               accessibilityLabel="Message"
             />
             {input.trim() ? (
-              <Pressable accessibilityLabel="Send" onPress={() => send(input, 'text')} style={[styles.roundBtn, { backgroundColor: theme.primary }]} disabled={busy}>
+              <Pressable
+                accessibilityLabel="Send"
+                onPress={() => send(input, 'text')}
+                style={[styles.roundBtn, { backgroundColor: theme.primary }]}
+                disabled={busy}>
                 <Icon name="arrow-up" color={theme.primaryText} />
               </Pressable>
             ) : (
@@ -342,7 +397,18 @@ const styles = StyleSheet.create({
   composer: { borderTopWidth: StyleSheet.hairlineWidth, paddingHorizontal: Spacing.three, paddingTop: Spacing.two, gap: Spacing.two },
   listening: { flexDirection: 'row', alignItems: 'center', gap: Spacing.two },
   inputRow: { flexDirection: 'row', alignItems: 'flex-end', gap: Spacing.two },
-  input: { flex: 1, minHeight: 48, maxHeight: 120, borderRadius: Radius.lg, paddingHorizontal: 16, paddingTop: 13, paddingBottom: 13, fontSize: 15 },
+  input: {
+    flex: 1,
+    minHeight: 48,
+    maxHeight: 120,
+    borderRadius: Radius.lg,
+    paddingHorizontal: 16,
+    paddingTop: 13,
+    paddingBottom: 13,
+    fontSize: 15,
+  },
   roundBtn: { width: 48, height: 48, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
   micBtn: { width: 56, height: 56, borderRadius: 28 },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

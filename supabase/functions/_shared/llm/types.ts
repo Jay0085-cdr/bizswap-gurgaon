@@ -27,6 +27,7 @@ export class LlmError extends Error {
     message: string,
     public kind: 'quota' | 'timeout' | 'bad_output' | 'config' | 'http',
     public status?: number,
+    public retryAfterMs?: number,
   ) {
     super(message);
   }

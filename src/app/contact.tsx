@@ -121,3 +121,5 @@ const styles = StyleSheet.create({
   input: { height: 50, borderRadius: Radius.md, borderWidth: 1, paddingHorizontal: Spacing.three, fontSize: 16 },
   switchRow: { flexDirection: 'row', alignItems: 'center', gap: Spacing.three },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

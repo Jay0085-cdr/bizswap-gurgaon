@@ -30,7 +30,12 @@ export default function Welcome() {
     await setRolePref(role);
     track('role_selected', { role }, 'welcome');
     void ensureSession().then((sess) => {
-      if (sess) void supabase.from('profiles').update({ role_pref: role }).eq('id', sess.user.id).then(() => {});
+      if (sess)
+        void supabase
+          .from('profiles')
+          .update({ role_pref: role })
+          .eq('id', sess.user.id)
+          .then(() => {});
     });
     router.replace('/explore');
     if (role !== 'browse') router.push({ pathname: '/chat/[role]', params: { role } });
@@ -102,3 +107,5 @@ const styles = StyleSheet.create({
   browse: { alignSelf: 'center', padding: Spacing.three },
   footer: { textAlign: 'center' },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';

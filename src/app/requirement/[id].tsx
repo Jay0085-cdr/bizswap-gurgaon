@@ -36,7 +36,15 @@ export default function RequirementDetail() {
   );
 
   if (loading) return <ActivityIndicator style={{ marginTop: 80 }} />;
-  if (!req) return <T style={{ margin: Spacing.four }}>Search not found.</T>;
+  if (!req)
+    return (
+      <Empty
+        icon="search-outline"
+        title="Search not found"
+        body="It may have been closed or deleted."
+        action={<Button title="Go to dashboard" onPress={() => router.replace('/dashboard')} />}
+      />
+    );
 
   const t = typeOf(req.business_type);
   const criteria = displayFields(req.business_type, 'buyer').filter((f) => f.key !== 'budget_max' && f.key !== 'budget_min');
@@ -87,7 +95,11 @@ export default function RequirementDetail() {
 
       <T type="subtitle">{matches.length ? `${matches.length} matches` : 'No matches yet'}</T>
       {matches.length === 0 ? (
-        <Empty icon="eye-outline" title="We’re watching" body="Our watch agent checks every new listing against this search and will notify you in your Inbox." />
+        <Empty
+          icon="eye-outline"
+          title="We’re watching"
+          body="Our watch agent checks every new listing against this search and will notify you in your Inbox."
+        />
       ) : (
         matches.map((m) => (
           <ListingCard
@@ -103,7 +115,14 @@ export default function RequirementDetail() {
         ))
       )}
 
-      {!req.watch && <Button title="Get notified of new matches" icon="notifications-outline" variant="secondary" onPress={() => router.push('/contact')} />}
+      {!req.watch && (
+        <Button
+          title="Get notified of new matches"
+          icon="notifications-outline"
+          variant="secondary"
+          onPress={() => router.push('/contact')}
+        />
+      )}
       {req.stage !== 'closed' && <Button title="Close this search" variant="ghost" onPress={close} />}
     </ScrollView>
   );
@@ -114,3 +133,5 @@ const styles = StyleSheet.create({
   rowBetween: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   fact: { flexDirection: 'row', justifyContent: 'space-between', gap: Spacing.three, paddingVertical: 2 },
 });
+
+export { ErrorBoundary } from '@/components/error-fallback';
