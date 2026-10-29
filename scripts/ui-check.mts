@@ -1,5 +1,6 @@
 // Headless UI check on the web build: drives real screens against the live backend and saves screenshots.
 // Run: node scripts/ui-check.mts [flow]   flows: seller | buyer | explore | all (default)
+//   UI_BASE=https://…/bizswap-gurgaon  test a deployed site instead of a local export
 // Requires Google Chrome. Screenshots → store/screenshots/web-*.png (phone viewport).
 import { execSync } from 'node:child_process';
 import { mkdirSync, readFileSync } from 'node:fs';
@@ -15,9 +16,10 @@ const shots = join(root, 'store/screenshots');
 mkdirSync(shots, { recursive: true });
 const flow = process.argv[2] ?? 'all';
 
-if (!process.env.SKIP_EXPORT) execSync(`npx expo export -p web --output-dir ${dist}`, { cwd: root, stdio: 'ignore' });
+const LIVE = process.env.UI_BASE;
+if (!LIVE && !process.env.SKIP_EXPORT) execSync(`npx expo export -p web --output-dir ${dist}`, { cwd: root, stdio: 'ignore' });
 const server = http.createServer((req, res) => handler(req, res, { public: dist, rewrites: [{ source: '**', destination: '/index.html' }] }));
-await new Promise<void>((r) => server.listen(8089, r));
+if (!LIVE) await new Promise<void>((r) => server.listen(8089, r));
 
 const browser = await puppeteer.launch({
   executablePath: '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
@@ -31,7 +33,7 @@ page.on('pageerror', (e) => errors.push(String(e)));
 page.on('console', (m) => m.type() === 'error' && !/Failed to load resource/.test(m.text()) && errors.push(m.text()));
 page.on('response', (r) => r.status() >= 400 && errors.push(`${r.status()} ${r.request().method()} ${r.url().split('?')[0]}`));
 
-const base = 'http://localhost:8089';
+const base = LIVE?.replace(/\/$/, '') ?? 'http://localhost:8089';
 const wait = (ms: number) => new Promise((r) => setTimeout(r, ms));
 const shot = (name: string) => page.screenshot({ path: join(shots, `web-${name}.png`) });
 async function clickText(p: Page, text: string) {
@@ -58,11 +60,27 @@ try {
     await clickText(page, 'Sell a Business');
     await waitText(page, 'Try saying');
     await shot('02-seller-chat');
-    await say(page, 'I want to sell my 20 year general physician practice with over 2000 patients and monthly billing of Rs 2 lacs');
-    await waitText(page, 'needed');
-    await shot('03-seller-followup');
-    await say(page, 'It is in Sushant Lok');
-    await waitText(page, 'Publish listing');
+    if (LIVE) {
+      await page.click('[aria-label="Speak"]');
+      await waitText(page, 'Voice works in the Android app', 5000);
+      console.log('  ✔ web mic shows the type-instead message');
+    }
+    // SELLER=gp keeps the original clinic example used for store screenshots
+    const turns =
+      process.env.SELLER === 'gp'
+        ? ['I want to sell my 20 year general physician practice with over 2000 patients and monthly billing of Rs 2 lacs', 'It is in Sushant Lok']
+        : [
+            'I want to sell my pub located at Ambience Mall, Gurgaon. Its got a footfall of 100 people a day, daily billings of Rs 10,000. Lease runs for 3 years and is Rs 30,000/month',
+            'Asking 45 lakh, running for 6 years',
+            'About 60 seats and it has a liquor licence',
+          ];
+    for (const [i, t] of turns.entries()) {
+      await say(page, t);
+      await page.waitForNetworkIdle({ idleTime: 1500, timeout: 90000 });
+      if (i === 0) await shot('03-seller-followup');
+      if (await page.evaluate(() => document.body.innerText.includes('Publish listing'))) break;
+    }
+    await waitText(page, 'Publish listing', 30000);
     await shot('04-seller-complete');
     await clickText(page, 'Publish listing');
     await waitText(page, 'Your listing is live', 90000);
@@ -167,5 +185,5 @@ try {
     console.log('  cleaned up test user');
   }
   await browser.close();
-  server.close();
+  if (!LIVE) server.close();
 }

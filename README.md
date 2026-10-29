@@ -4,6 +4,8 @@
 
 Sellers and buyers never fill in a form. They just **speak or type**. Five AI agents do the rest: they extract the details, ask for anything missing, geocode the location, write an anonymised listing, value the business, match buyers with sellers, and watch for new matches.
 
+**▶ Live web demo: https://jay0085-cdr.github.io/bizswap-gurgaon/** (voice input is Android-only; type on web)
+
 Built as a 2-day internship MVP for WildCatter Ventures. **Zero cost:** only free tiers, with no credit card anywhere.
 
 | | | | |
@@ -159,6 +161,7 @@ Everything is in `/store`: the icon, feature graphic, eight 9:16 screenshots, th
 | `npm run assets` | Regenerates the icon, splash, feature graphic, Play screenshots and privacy HTML from code |
 | `npm run db:push` | Regenerates the seed and pushes migrations (needs only the DB password) |
 | `npm run functions:deploy` | Redeploys all agents |
+| `npm run web:deploy` | Builds the web app, checks it for leaked secrets, publishes it plus the privacy policy to GitHub Pages (`gh-pages` branch) |
 
 ## Project layout
 

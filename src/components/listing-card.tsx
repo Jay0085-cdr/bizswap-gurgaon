@@ -15,7 +15,7 @@ export function keyMetrics(typeKey: string, a: Attrs): { label: string; value: s
     case 'restaurant':
       return [
         { label: 'Daily billing', value: formatINRCompact(n('daily_billing')) },
-        { label: 'Footfall/day', value: n('daily_footfall')?.toString() ?? '—' },
+        { label: 'Daily visits', value: n('daily_footfall')?.toString() ?? '—' },
         { label: 'Lease left', value: n('lease_remaining_years') !== null ? `${n('lease_remaining_years')} yrs` : '—' },
       ];
     case 'doctor':

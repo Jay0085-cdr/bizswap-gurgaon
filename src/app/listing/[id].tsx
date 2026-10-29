@@ -1,12 +1,13 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { TypeBadge } from '@/components/listing-card';
 import { Button, Card, Icon, Pill, StageStepper, T } from '@/components/ui';
 import { STAGE_LABEL, Spacing, type Stage } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { typeOf } from '@/lib/config';
+import { notify } from '@/lib/dialog';
 import { formatINR, formatINRCompact, formatRange } from '@/lib/inr';
 import { ensureSession, supabase } from '@/lib/supabase';
 import { track, trackView } from '@/lib/track';
@@ -62,7 +63,7 @@ export default function ListingDetail() {
     setSending(true);
     const { error } = await supabase.rpc('express_interest', { p_listing_id: l.id, p_note: null });
     setSending(false);
-    if (error) return Alert.alert('Could not send', error.message);
+    if (error) return notify('Could not send', error.message);
     setInterested(true);
     track('interest_expressed', { listing_id: l.id }, 'listing');
     router.push({ pathname: '/contact', params: { reason: 'interest' } });
@@ -70,7 +71,7 @@ export default function ListingDetail() {
 
   const advance = async (to: Stage) => {
     const { error } = await supabase.rpc('set_listing_stage', { p_listing_id: l.id, p_stage: to });
-    if (error) return Alert.alert('Could not update', error.message);
+    if (error) return notify('Could not update', error.message);
     setL({ ...l, stage: to });
     track('stage_changed', { listing_id: l.id, to }, 'listing');
   };

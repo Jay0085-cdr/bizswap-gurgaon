@@ -49,3 +49,4 @@ supabase/.branches/
 *.keystore
 credentials.json
 dist-web/
+dist-pages/

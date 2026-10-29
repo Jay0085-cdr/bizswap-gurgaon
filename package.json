@@ -66,7 +66,8 @@
     "assets": "node scripts/gen-store-assets.mts",
     "build:apk": "eas build -p android --profile preview --non-interactive",
     "build:aab": "eas build -p android --profile production --non-interactive",
-    "build:dev": "eas build -p android --profile development --non-interactive"
+    "build:dev": "eas build -p android --profile development --non-interactive",
+    "web:deploy": "bash scripts/deploy-web.sh"
   },
   "private": true,
   "engines": {

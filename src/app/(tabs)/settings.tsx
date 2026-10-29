@@ -1,9 +1,10 @@
 import { router } from 'expo-router';
-import { Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { Button, Card, Chip, T } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme, useThemePref, type ThemePref } from '@/hooks/use-theme';
+import { confirm, notify } from '@/lib/dialog';
 import { setRolePref } from '@/lib/prefs';
 import { ensureSession, resetSession, supabase } from '@/lib/supabase';
 import { track } from '@/lib/track';
@@ -18,22 +19,15 @@ export default function Settings() {
   const theme = useTheme();
   const { pref, setPref } = useThemePref();
 
-  const deleteData = () =>
-    Alert.alert('Delete all my data?', 'This permanently removes your listings, searches, chats and contact details.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Delete',
-        style: 'destructive',
-        onPress: async () => {
-          await ensureSession();
-          const { error } = await supabase.rpc('delete_my_data');
-          if (error) return Alert.alert('Could not delete', error.message);
-          await resetSession();
-          await setRolePref(null);
-          router.replace('/');
-        },
-      },
-    ]);
+  const deleteData = async () => {
+    if (!(await confirm('Delete all my data?', 'This permanently removes your listings, searches, chats and contact details.', 'Delete', true))) return;
+    await ensureSession();
+    const { error } = await supabase.rpc('delete_my_data');
+    if (error) return notify('Could not delete', error.message);
+    await resetSession();
+    await setRolePref(null);
+    router.replace('/');
+  };
 
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>

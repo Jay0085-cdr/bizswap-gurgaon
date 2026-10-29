@@ -23,6 +23,8 @@ Also read `AGENTS.md` (Expo SDK 58 rules — don't trust memory for Expo APIs; c
 | Deploy agents | `npm run functions:deploy` |
 | Agent smoke tests | `npm run smoke` |
 | Store assets | `npm run assets` |
+| Deploy web demo + privacy page | `npm run web:deploy` → https://jay0085-cdr.github.io/bizswap-gurgaon/ |
+| UI test against live site | `UI_BASE=https://jay0085-cdr.github.io/bizswap-gurgaon node scripts/ui-check.mts all` |
 | Builds | `npm run build:dev` · `npm run build:apk` · `npm run build:aab` |
 
 ## Layout
@@ -43,6 +45,8 @@ scripts/            setup/deploy/seed/smoke/assets  store/  Play Store assets   
 - Public catalogue reads go through `public_listings` view (no seller identity). Pins are jittered ~250 m.
 - Client writes only to: profiles, contacts, events, search_events, listing_views, saved_searches, notifications.read_at, and via RPCs. Everything else is written by agents (service role).
 - Style: functional components, `StyleSheet.create`, theme via `useTheme()`; primitives in `src/components/ui.tsx`. Keep comments sparse.
+- Web: anything native-only needs a `.web.ts(x)` twin (see `use-speech.web.ts`, `listing-map.web.tsx`). Use `confirm`/`notify` from `src/lib/dialog.ts`, never `Alert.alert` (no-op on web).
+- Package ID lives only in `app.config.ts` (`APP_PACKAGE_ID` env overrides).
 - Before each commit: `npm run check`. Log AI usage in `docs/AI_BUILD_LOG.md`.
 
 ## Milestones

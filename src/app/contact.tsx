@@ -1,11 +1,12 @@
 import { router, useLocalSearchParams } from 'expo-router';
 import { useEffect, useState } from 'react';
-import { Alert, KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
+import { KeyboardAvoidingView, Platform, ScrollView, StyleSheet, Switch, TextInput, View } from 'react-native';
 
 import { Button, T } from '@/components/ui';
 import { Radius, Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { agents } from '@/lib/agents';
+import { notify } from '@/lib/dialog';
 import { ensureSession, supabase } from '@/lib/supabase';
 import { track } from '@/lib/track';
 
@@ -49,7 +50,7 @@ export default function Contact() {
     });
     if (!error && watch) await agents.watch().catch(() => {});
     setSaving(false);
-    if (error) return Alert.alert('Could not save', error.message);
+    if (error) return notify('Could not save', error.message);
     track('contact_shared', { phone: !!p, email: !!email, watch, reason }, 'contact');
     router.back();
   };

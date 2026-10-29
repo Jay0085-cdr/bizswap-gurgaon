@@ -1,12 +1,13 @@
 import { router, useFocusEffect, useLocalSearchParams } from 'expo-router';
 import { useCallback, useState } from 'react';
-import { ActivityIndicator, Alert, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, ScrollView, StyleSheet, View } from 'react-native';
 
 import { ListingCard } from '@/components/listing-card';
 import { Button, Card, Empty, Pill, StageStepper, T } from '@/components/ui';
 import { Spacing } from '@/constants/theme';
 import { useTheme } from '@/hooks/use-theme';
 import { displayFields, typeOf } from '@/lib/config';
+import { confirm } from '@/lib/dialog';
 import { formatINRCompact } from '@/lib/inr';
 import { ensureSession, supabase } from '@/lib/supabase';
 import { track } from '@/lib/track';
@@ -40,19 +41,12 @@ export default function RequirementDetail() {
   const t = typeOf(req.business_type);
   const criteria = displayFields(req.business_type, 'buyer').filter((f) => f.key !== 'budget_max' && f.key !== 'budget_min');
 
-  const close = () =>
-    Alert.alert('Close this search?', 'You’ll stop getting matches for it.', [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Close search',
-        style: 'destructive',
-        onPress: async () => {
-          await supabase.rpc('set_requirement_stage', { p_requirement_id: req.id, p_stage: 'closed' });
-          track('requirement_closed', { requirement_id: req.id }, 'requirement');
-          router.back();
-        },
-      },
-    ]);
+  const close = async () => {
+    if (!(await confirm('Close this search?', 'You’ll stop getting matches for it.', 'Close search', true))) return;
+    await supabase.rpc('set_requirement_stage', { p_requirement_id: req.id, p_stage: 'closed' });
+    track('requirement_closed', { requirement_id: req.id }, 'requirement');
+    router.back();
+  };
 
   return (
     <ScrollView style={{ backgroundColor: theme.background }} contentContainerStyle={styles.content}>
