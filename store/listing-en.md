@@ -41,7 +41,7 @@ All prices are shown in ₹ lakh and crore. Valuations are indicative AI estimat
 - **App category:** Business
 - **Tags:** Business, Marketplace, Small business
 - **Contact email:** jayvasani8112005@gmail.com
-- **Privacy policy URL:** host `docs/privacy/index.html` (see README → "Host the privacy policy"), for example `https://<github-user>.github.io/<repo>/privacy/`
+- **Privacy policy URL:** `https://jay0085-cdr.github.io/bizswap-gurgaon/privacy/`
 
 ## Graphics (in `/store`)
 | Asset | File | Play requirement |
@@ -67,6 +67,8 @@ All prices are shown in ₹ lakh and crore. Valuations are indicative AI estimat
 | App activity → In-app search history | Yes | Required | App functionality, Analytics | Searches and filters used |
 | App activity → Other user-generated content | Yes | Required | App functionality | Business descriptions typed or spoken (as text) |
 | App activity → App interactions | Yes | Required | Analytics | Screens viewed, taps |
+| App info and performance → Crash logs, Diagnostics | Yes | Required | App functionality | In-app error reports, app version, screen name |
+| App activity → Other actions (feedback) | Yes | Optional | App functionality | Tester feedback typed in the app |
 | Device or other IDs | Yes | Required | App functionality | Random install ID (not a hardware or advertising ID) |
 | Audio | **No** | | | Speech is transcribed on-device and no audio leaves the phone |
 | Location | **No** | | | |
@@ -75,5 +77,5 @@ All prices are shown in ₹ lakh and crore. Valuations are indicative AI estimat
 - **Can users request deletion?** Yes, in-app via Settings → Delete my data, or by email.
 - **Data processed by a service provider:** Supabase (hosting) and Google Gemini (AI text processing). In the Data safety form these count as service providers, not as "sharing".
 
-## Release notes (v1.0.0)
+## Release notes (v1.0)
 `First release: AI-powered selling and buying of running businesses in Gurgaon, with voice input, map discovery, AI valuation and matchmaking.`

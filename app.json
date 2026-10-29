@@ -2,14 +2,13 @@
   "expo": {
     "name": "BizSwap Gurgaon",
     "slug": "bizswap-gurgaon",
-    "version": "1.0.0",
+    "version": "1.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
     "scheme": "bizswap",
     "userInterfaceStyle": "automatic",
     "description": "AI-native marketplace to buy and sell running businesses in Gurgaon.",
     "ios": {
-      "bundleIdentifier": "com.bizswap.gurgaon",
       "supportsTablet": false,
       "infoPlist": {
         "NSSpeechRecognitionUsageDescription": "BizSwap converts your speech to text on your device.",
@@ -17,7 +16,6 @@
       }
     },
     "android": {
-      "package": "com.bizswap.gurgaon",
       "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#4F46E5",

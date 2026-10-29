@@ -2,9 +2,9 @@
 // docs/privacy/index.html + store/privacy-policy.html by scripts/gen-store-assets.mts.
 export const PRIVACY = {
   app: 'BizSwap Gurgaon',
-  effective: '26 October 2026',
+  effective: '29 October 2026',
   contact: 'jayvasani8112005@gmail.com',
-  url: 'https://<your-github-username>.github.io/<repo>/privacy/',
+  url: 'https://jay0085-cdr.github.io/bizswap-gurgaon/privacy/',
   sections: [
     {
       h: 'Who we are',
@@ -18,6 +18,7 @@ export const PRIVACY = {
         'Anonymous account: when you open the app we create an anonymous account identifier and a random install ID. We do not ask for your name and you do not need to sign up.',
         'What you tell our assistant: the messages you type or speak about the business you want to sell or buy (for example type, area, footfall, billing, rent, clients, budget). Voice is converted to text on your device; we receive only the text, never audio.',
         'Usage data: screens opened, searches and filters used, listings viewed, matches shown and buttons tapped, with timestamps.',
+        'Feedback and diagnostics: feedback you choose to send from the app (with the app version and screen name), and technical error reports if a screen fails, so we can fix problems.',
         'Optional contact details: if you choose to share a mobile number or email, we store it so we can notify you about matches and so sellers you express interest in can reach you. This is optional.',
         'We do not collect your location, contacts, photos, files or advertising ID. The only device permission the app may request is the microphone, and only when you tap the mic button.',
       ],

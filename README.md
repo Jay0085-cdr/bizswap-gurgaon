@@ -145,8 +145,8 @@ RLS is on for every table. Clients can only read their own rows and can only ins
    npm run build:dev           # optional dev-client APK for hot reload with `npm start`
    ```
 
-### Host the privacy policy (free)
-Push the repo to GitHub, then go to Settings → Pages → Source: `main` / `docs`. The policy will be at `https://<user>.github.io/<repo>/privacy/`. Put that URL in Play Console and in `src/constants/privacy.ts`.
+### Privacy policy
+Live at https://jay0085-cdr.github.io/bizswap-gurgaon/privacy/. It is published with the web demo by `npm run web:deploy` (GitHub Pages, `gh-pages` branch).
 
 ### Upload to Play
 Everything is in `/store`: the icon, feature graphic, eight 9:16 screenshots, the full listing text, and suggested Data safety and content-rating answers in `store/listing-en.md`. Upload the `.aab` from `npm run build:aab`.
