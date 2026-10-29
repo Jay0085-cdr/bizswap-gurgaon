@@ -426,3 +426,6 @@ verify_jwt = false
 verify_jwt = false
 [functions.watch-agent]
 verify_jwt = false
+
+[functions.feedback-agent]
+verify_jwt = false

@@ -119,6 +119,14 @@ try {
     await wait(500);
     await shot('13-inbox');
     console.log('✔ dashboards + inbox');
+
+    await page.click('[aria-label="Send feedback"]');
+    await waitText(page, 'Tell us anything');
+    await page.type('textarea[aria-label="Feedback message"]', 'UI check: automated test feedback, please ignore');
+    await clickText(page, 'Send feedback');
+    await waitText(page, 'Thank you', 20000);
+    await shot('14-feedback-sent');
+    console.log('✔ feedback');
   }
 
   if (flow === 'explore' || flow === 'all') {

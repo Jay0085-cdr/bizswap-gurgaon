@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Tabs } from 'expo-router/tabs';
 
+import { FeedbackButton } from '@/components/feedback-button';
 import { useTheme } from '@/hooks/use-theme';
 
 export default function TabsLayout() {
@@ -25,15 +26,15 @@ export default function TabsLayout() {
       />
       <Tabs.Screen
         name="dashboard"
-        options={{ title: 'Dashboard', tabBarIcon: ({ color, size }) => <Ionicons name="grid" color={color as string} size={size} /> }}
+        options={{ title: 'Dashboard', headerRight: () => <FeedbackButton screen="dashboard" />, tabBarIcon: ({ color, size }) => <Ionicons name="grid" color={color as string} size={size} /> }}
       />
       <Tabs.Screen
         name="inbox"
-        options={{ title: 'Inbox', tabBarIcon: ({ color, size }) => <Ionicons name="notifications" color={color as string} size={size} /> }}
+        options={{ title: 'Inbox', headerRight: () => <FeedbackButton screen="inbox" />, tabBarIcon: ({ color, size }) => <Ionicons name="notifications" color={color as string} size={size} /> }}
       />
       <Tabs.Screen
         name="settings"
-        options={{ title: 'Settings', tabBarIcon: ({ color, size }) => <Ionicons name="settings" color={color as string} size={size} /> }}
+        options={{ title: 'Settings', headerRight: () => <FeedbackButton screen="settings" />, tabBarIcon: ({ color, size }) => <Ionicons name="settings" color={color as string} size={size} /> }}
       />
     </Tabs>
   );

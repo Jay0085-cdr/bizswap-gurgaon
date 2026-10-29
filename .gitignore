@@ -50,3 +50,4 @@ supabase/.branches/
 credentials.json
 dist-web/
 dist-pages/
+reports/

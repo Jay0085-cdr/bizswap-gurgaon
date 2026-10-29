@@ -5,6 +5,7 @@ import { StatusBar } from 'expo-status-bar';
 import { useEffect } from 'react';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
+import { FeedbackButton } from '@/components/feedback-button';
 import { Colors } from '@/constants/theme';
 import { ThemePrefProvider, useThemePref } from '@/hooks/use-theme';
 import { refreshConfig } from '@/lib/config';
@@ -38,9 +39,10 @@ function Root() {
       <Stack screenOptions={{ headerShadowVisible: false, headerStyle: { backgroundColor: c.background }, headerTintColor: c.text }}>
         <Stack.Screen name="index" options={{ headerShown: false }} />
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="chat/[role]" options={{ title: 'AI assistant' }} />
-        <Stack.Screen name="listing/[id]" options={{ title: 'Business details' }} />
-        <Stack.Screen name="requirement/[id]" options={{ title: 'Your search' }} />
+        <Stack.Screen name="chat/[role]" options={({ route }) => ({ title: 'AI assistant', headerRight: () => <FeedbackButton screen={`chat/${(route.params as { role?: string })?.role ?? ''}`} /> })} />
+        <Stack.Screen name="listing/[id]" options={{ title: 'Business details', headerRight: () => <FeedbackButton screen="listing" /> }} />
+        <Stack.Screen name="requirement/[id]" options={{ title: 'Your search', headerRight: () => <FeedbackButton screen="requirement" /> }} />
+        <Stack.Screen name="feedback" options={{ presentation: 'modal', title: 'Feedback' }} />
         <Stack.Screen name="contact" options={{ presentation: 'modal', title: 'Stay updated' }} />
         <Stack.Screen name="privacy" options={{ title: 'Privacy policy' }} />
       </Stack>

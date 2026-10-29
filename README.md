@@ -2,7 +2,7 @@
 
 **An AI-native Android marketplace for buying and selling running businesses in Gurgaon** (pubs, restaurants, doctor clinics, CA and CS practices).
 
-Sellers and buyers never fill in a form. They just **speak or type**. Five AI agents do the rest: they extract the details, ask for anything missing, geocode the location, write an anonymised listing, value the business, match buyers with sellers, and watch for new matches.
+Sellers and buyers never fill in a form. They just **speak or type**. Six AI agents do the rest: they extract the details, ask for anything missing, geocode the location, write an anonymised listing, value the business, match buyers with sellers, and watch for new matches.
 
 **▶ Live web demo: https://jay0085-cdr.github.io/bizswap-gurgaon/** (voice input is Android-only; type on web)
 
@@ -96,6 +96,7 @@ sequenceDiagram
 | **listing-agent** | Geocodes against a static 46-place Gurgaon gazetteer (exact alias first, then the LLM picks the nearest known place). Writes an anonymised title and summary. Offsets the pin. Publishes the listing and triggers valuation and matching. | Template copy |
 | **valuation-agent** | Computes an indicative range from config multiples (for example a pub at 0.6–1.2× annual revenue, a CA practice at 1.0–1.8× fees), adjusted for a short lease or a long track record. The LLM only writes the 2-sentence explanation and never changes the numbers. | Template reasoning |
 | **matchmaker-agent** | Scores listing↔requirement fit from 0 to 100. A deterministic pre-score (distance, budget and size minimums) shortlists candidates, one batched LLM call refines the top 8 with reasons, and hard guards (price > 2× budget, wrong specialty) cap the score. | Pre-score only |
+| **feedback-agent** | Admin-only. Clusters closed-test feedback (sent from the in-app feedback button, tagged with app version and screen) into themes, with severity, a summary and a suggested fix. **Code** counts items and testers and ranks themes by frequency × severity, then stores the report in `feedback_reports`. Run with `npm run feedback`. | Keyword grouping |
 | **watch-agent** | Turns new matches into inbox notifications for buyers and sellers, keeps saved searches for users who shared contact details, and runs a pg_cron sweep every 30 minutes. | — (no LLM) |
 
 **Provider-swappable:** set `LLM_PROVIDER=gemini|anthropic|groq` and `LLM_MODEL`, and optionally `LLM_FALLBACK_PROVIDER`. Gemini uses the Interactions API with a JSON schema, Claude uses forced tool use, and Groq uses OpenAI-compatible JSON mode. Every call is validated with zod, retried once with the validation error if it fails, and **logged to `agent_runs`** (input, output, model, latency, tokens).
@@ -161,6 +162,7 @@ Everything is in `/store`: the icon, feature graphic, eight 9:16 screenshots, th
 | `npm run assets` | Regenerates the icon, splash, feature graphic, Play screenshots and privacy HTML from code |
 | `npm run db:push` | Regenerates the seed and pushes migrations (needs only the DB password) |
 | `npm run functions:deploy` | Redeploys all agents |
+| `npm run feedback` | Runs the feedback-agent and prints the ranked tester-feedback report |
 | `npm run web:deploy` | Builds the web app, checks it for leaked secrets, publishes it plus the privacy policy to GitHub Pages (`gh-pages` branch) |
 
 ## Project layout

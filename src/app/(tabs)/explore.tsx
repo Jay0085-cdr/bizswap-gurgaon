@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { FlatList, Pressable, ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { FeedbackButton } from '@/components/feedback-button';
 import { ListingMap } from '@/components/listing-map';
 import { ListingCard } from '@/components/listing-card';
 import { Button, Chip, Icon, T } from '@/components/ui';
@@ -109,6 +110,7 @@ export default function Explore() {
               <Icon name="close-circle" size={18} color={theme.textSecondary} />
             </Pressable>
           ) : null}
+          <FeedbackButton screen="explore" />
         </View>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chips}>
           <Chip label="All" selected={types.length === 0} onPress={() => setTypes([])} />

@@ -23,6 +23,7 @@ Also read `AGENTS.md` (Expo SDK 58 rules — don't trust memory for Expo APIs; c
 | Deploy agents | `npm run functions:deploy` |
 | Agent smoke tests | `npm run smoke` |
 | Store assets | `npm run assets` |
+| Tester feedback report (feedback-agent) | `npm run feedback` (`-- --days 7`, `-- --raw`) → also saved to `reports/` (gitignored) |
 | Deploy web demo + privacy page | `npm run web:deploy` → https://jay0085-cdr.github.io/bizswap-gurgaon/ |
 | UI test against live site | `UI_BASE=https://jay0085-cdr.github.io/bizswap-gurgaon node scripts/ui-check.mts all` |
 | Builds | `npm run build:dev` · `npm run build:apk` · `npm run build:aab` |
