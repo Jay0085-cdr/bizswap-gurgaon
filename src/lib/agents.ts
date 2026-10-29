@@ -3,7 +3,7 @@ import { ensureSession, supabase } from '@/lib/supabase';
 import { track } from '@/lib/track';
 import type { ConfirmResponse, IntakeResponse } from '@/lib/types';
 
-async function call<T>(fn: string, body: Record<string, unknown>): Promise<T> {
+async function call<T>(fn: string, body: Record<string, unknown>, attempt = 0): Promise<T> {
   const session = await ensureSession();
   if (!session) throw new Error('You seem to be offline — check your internet and try again.');
   const { data, error } = await supabase.functions.invoke(fn, { body });
@@ -17,7 +17,12 @@ async function call<T>(fn: string, body: Record<string, unknown>): Promise<T> {
         detail = (await ctx.json())?.error ?? detail;
       }
     } catch {}
-    track('agent_error', { fn, status, detail: String(detail).slice(0, 300) });
+    track('agent_error', { fn, status, attempt, detail: String(detail).slice(0, 300) });
+    // 503 comes from the edge runtime before our code runs (cold start / worker limit), so one retry is safe
+    if (status === 503 && attempt === 0) {
+      await new Promise((r) => setTimeout(r, 1500));
+      return call<T>(fn, body, 1);
+    }
     throw new Error(
       !status
         ? 'Couldn’t reach our servers — check your internet and try again.'
